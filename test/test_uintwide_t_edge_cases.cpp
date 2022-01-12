@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2019 - 2021.
+//  Copyright Christopher Kormanyos 2019 - 2022.
 //  Distributed under the Boost Software License,
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -16,37 +16,36 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
 
-#if defined(__clang__) && !defined(__APPLE__)
+#if (defined(__clang__) && (__clang_major__ > 9)) && !defined(__APPLE__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #endif
 
-#include <boost/lexical_cast.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/multiprecision/uintwide_t_backend.hpp>
 
 #include <math/wide_integer/uintwide_t.h>
-#include <math/wide_integer/uintwide_t_test.h>
+#include <test/test_uintwide_t.h>
 
-namespace
+namespace local_edge_cases
 {
   constexpr std::size_t local_digits2 = 16384U;
-}
+} // namespace local_edge_cases
 
 using local_uint_type =
-  boost::multiprecision::number<boost::multiprecision::uintwide_t_backend<local_digits2>,
+  boost::multiprecision::number<boost::multiprecision::uintwide_t_backend<local_edge_cases::local_digits2>,
                                 boost::multiprecision::et_off>;
 
 using boost_uint_backend_type =
-  boost::multiprecision::cpp_int_backend<local_digits2,
-                                         local_digits2,
+  boost::multiprecision::cpp_int_backend<local_edge_cases::local_digits2,
+                                         local_edge_cases::local_digits2,
                                          boost::multiprecision::unsigned_magnitude>;
 
 using boost_uint_type =
   boost::multiprecision::number<boost_uint_backend_type,
                                 boost::multiprecision::et_off>;
 
-bool math::wide_integer::test_uintwide_t_edge_cases()
+auto math::wide_integer::test_uintwide_t_edge_cases() -> bool
 {
   const local_uint_type u_max_local = (std::numeric_limits<local_uint_type>::max)();
   const boost_uint_type u_max_boost = (std::numeric_limits<boost_uint_type>::max)();
@@ -65,7 +64,7 @@ bool math::wide_integer::test_uintwide_t_edge_cases()
   const bool result02_is_ok = ((result_local == 2U) && (result_boost == 2U));
 
   const std::string str_seven_and_effs =
-    "0x7" + std::string(std::string::size_type((local_digits2 / 4) - 1U), char('F'));
+    "0x7" + std::string(std::string::size_type((local_edge_cases::local_digits2 / 4) - 1U), char('F'));
 
   const local_uint_type u_seven_and_effs_local(str_seven_and_effs.c_str());
   const boost_uint_type u_seven_and_effs_boost(str_seven_and_effs.c_str());
@@ -77,8 +76,8 @@ bool math::wide_integer::test_uintwide_t_edge_cases()
 
   const std::string str_three_quarter_effs_and_zeros =
       "0x"
-    + std::string(std::string::size_type((local_digits2 / 4) * 3U), char('F'))
-    + std::string(std::string::size_type((local_digits2 / 4) * 1U), char('0'))
+    + std::string(std::string::size_type((local_edge_cases::local_digits2 / 4) * 3U), char('F'))
+    + std::string(std::string::size_type((local_edge_cases::local_digits2 / 4) * 1U), char('0'))
     ;
 
   const local_uint_type u_three_quarter_effs_and_zeros_local(str_three_quarter_effs_and_zeros.c_str());
@@ -91,8 +90,8 @@ bool math::wide_integer::test_uintwide_t_edge_cases()
 
   const std::string str_one_quarter_effs_and_zeros =
       "0x"
-    + std::string(std::string::size_type((local_digits2 / 4) * 1U), char('F'))
-    + std::string(std::string::size_type((local_digits2 / 4) * 3U), char('0'))
+    + std::string(std::string::size_type((local_edge_cases::local_digits2 / 4) * 1U), char('F'))
+    + std::string(std::string::size_type((local_edge_cases::local_digits2 / 4) * 3U), char('0'))
     ;
 
   const local_uint_type u_one_quarter_effs_and_zeros_local(str_one_quarter_effs_and_zeros.c_str());
@@ -141,7 +140,7 @@ bool math::wide_integer::test_uintwide_t_edge_cases()
   return result_is_ok;
 }
 
-#if defined(__clang__) && !defined(__APPLE__)
+#if (defined(__clang__) && (__clang_major__ > 9)) && !defined(__APPLE__)
 #pragma GCC diagnostic pop
 #endif
 

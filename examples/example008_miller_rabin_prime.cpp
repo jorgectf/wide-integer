@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2018 - 2021.                 //
+//  Copyright Christopher Kormanyos 2018 - 2022.                 //
 //  Distributed under the Boost Software License,                //
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt          //
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)             //
@@ -12,10 +12,10 @@
 
 #include <random>
 
+#include <examples/example_uintwide_t.h>
 #include <math/wide_integer/uintwide_t.h>
-#include <math/wide_integer/uintwide_t_examples.h>
 
-bool math::wide_integer::example008_miller_rabin_prime()
+auto math::wide_integer::example008_miller_rabin_prime() -> bool
 {
   using wide_integer_type   = math::wide_integer::uintwide_t<512U>;
   using distribution_type   = math::wide_integer::uniform_int_distribution<wide_integer_type::my_width2, typename wide_integer_type::limb_type>;

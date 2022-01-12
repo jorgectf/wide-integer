@@ -5,23 +5,23 @@
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)             //
 ///////////////////////////////////////////////////////////////////
 
+#include <examples/example_uintwide_t.h>
 #include <math/wide_integer/uintwide_t.h>
-#include <math/wide_integer/uintwide_t_examples.h>
 
 namespace local
 {
   template<typename NumericType>
-  WIDE_INTEGER_CONSTEXPR NumericType fabs(NumericType a)
+  WIDE_INTEGER_CONSTEXPR auto fabs(NumericType a) -> NumericType
   {
     return ((a < NumericType(0)) ? -a : a);
   }
-}
+} // namespace local
 
-bool math::wide_integer::example000a_builtin_convert()
+auto math::wide_integer::example000a_builtin_convert() -> bool
 {
   bool result_is_ok = true;
 
-  using int256_t = math::wide_integer::int256_t;
+  using math::wide_integer::int256_t;
 
   {
     WIDE_INTEGER_CONSTEXPR int256_t n = -1234567.89;
@@ -29,7 +29,7 @@ bool math::wide_integer::example000a_builtin_convert()
     WIDE_INTEGER_CONSTEXPR bool result_n_is_ok = (n == -1234567);
 
     #if defined(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST) && (WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST != 0)
-    static_assert(result_n_is_ok == true, "Error: example000a_builtin_convert not OK!");
+    static_assert(result_n_is_ok, "Error: example000a_builtin_convert not OK!");
     #endif
 
     result_is_ok &= result_n_is_ok;
@@ -38,7 +38,7 @@ bool math::wide_integer::example000a_builtin_convert()
   {
     WIDE_INTEGER_CONSTEXPR int256_t n = "-12345678900000000000000000000000";
 
-    WIDE_INTEGER_CONSTEXPR float    f = (float) n;
+    WIDE_INTEGER_CONSTEXPR auto f = static_cast<float>(n);
 
     using local::fabs;
 
@@ -46,10 +46,24 @@ bool math::wide_integer::example000a_builtin_convert()
     WIDE_INTEGER_CONSTEXPR bool result_f_is_ok = (closeness < std::numeric_limits<float>::epsilon());
 
     #if defined(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST) && (WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST != 0)
-    static_assert(result_f_is_ok == true, "Error: example000a_builtin_convert not OK!");
+    static_assert(result_f_is_ok, "Error: example000a_builtin_convert not OK!");
     #endif
 
     result_is_ok &= result_f_is_ok;
+  }
+
+  {
+    WIDE_INTEGER_CONSTEXPR int256_t     n   = "-123456789000000000";
+
+    WIDE_INTEGER_CONSTEXPR auto n64 = static_cast<std::int64_t>(n);
+
+    WIDE_INTEGER_CONSTEXPR bool result_n_is_ok = (n64 == INT64_C(-123456789000000000));
+
+    #if defined(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST) && (WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST != 0)
+    static_assert((n64 == INT64_C(-123456789000000000)), "Error: example000a_builtin_convert not OK!");
+    #endif
+
+    result_is_ok &= result_n_is_ok;
   }
 
   return result_is_ok;

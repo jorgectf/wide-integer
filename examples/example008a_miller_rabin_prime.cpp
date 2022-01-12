@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2018 - 2021.                 //
+//  Copyright Christopher Kormanyos 2018 - 2022.                 //
 //  Distributed under the Boost Software License,                //
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt          //
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)             //
@@ -22,16 +22,19 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
 
-#if defined(__clang__) && !defined(__APPLE__)
+#if (defined(__clang__) && (__clang_major__ > 9)) && !defined(__APPLE__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #endif
 
 #include <boost/multiprecision/miller_rabin.hpp>
 #include <boost/multiprecision/uintwide_t_backend.hpp>
-#include <math/wide_integer/uintwide_t_examples.h>
+#include <boost/random/independent_bits.hpp>
+#include <boost/random/mersenne_twister.hpp>
 
-bool math::wide_integer::example008a_miller_rabin_prime()
+#include <examples/example_uintwide_t.h>
+
+auto math::wide_integer::example008a_miller_rabin_prime() -> bool
 {
   using wide_integer_type = boost::multiprecision::number<boost::multiprecision::uintwide_t_backend<512U>,
                                                           boost::multiprecision::et_off>;
@@ -100,7 +103,7 @@ int main()
 
 #endif
 
-#if defined(__clang__) && !defined(__APPLE__)
+#if (defined(__clang__) && (__clang_major__ > 9)) && !defined(__APPLE__)
 #pragma GCC diagnostic pop
 #endif
 

@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2019 - 2021.
+//  Copyright Christopher Kormanyos 2019 - 2022.
 //  Distributed under the Boost Software License,
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -14,18 +14,28 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
 
-#if defined(__clang__) && !defined(__APPLE__)
+#if (defined(__clang__) && (__clang_major__ > 9)) && !defined(__APPLE__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #endif
 
 #include <test/test_uintwide_t_n_binary_ops_base.h>
 
-std::random_device test_uintwide_t_n_binary_ops_base::my_rnd;
+auto test_uintwide_t_n_binary_ops_base::my_rnd() -> std::random_device&
+{
+  static std::random_device my_random_device;
 
-test_uintwide_t_n_binary_ops_base::random_generator_type test_uintwide_t_n_binary_ops_base::my_gen(my_rnd());
+  return my_random_device;
+}
 
-#if defined(__clang__) && !defined(__APPLE__)
+auto test_uintwide_t_n_binary_ops_base::my_gen() -> test_uintwide_t_n_binary_ops_base::random_generator_type&
+{
+  static random_generator_type my_generator(my_rnd()());
+
+  return my_generator;
+}
+
+#if (defined(__clang__) && (__clang_major__ > 9)) && !defined(__APPLE__)
 #pragma GCC diagnostic pop
 #endif
 

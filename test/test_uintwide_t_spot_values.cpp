@@ -1,18 +1,422 @@
-///////////////////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2019 - 2021.
+﻿///////////////////////////////////////////////////////////////////////////////
+//  Copyright Christopher Kormanyos 2019 - 2022.
 //  Distributed under the Boost Software License,
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <cassert>
 #include <sstream>
 
 #include <math/wide_integer/uintwide_t.h>
-#include <math/wide_integer/uintwide_t_test.h>
+#include <test/test_uintwide_t.h>
 
-bool math::wide_integer::test_uintwide_t_spot_values()
+namespace local
+{
+  template<typename UnknownIntegerType>
+  auto test_uintwide_t_spot_values_from_issue_145(const UnknownIntegerType x) -> bool
+  {
+    // See also https://github.com/ckormanyos/wide-integer/issues/145#issuecomment-1006374713
+
+    using local_unknown_integer_type = UnknownIntegerType;
+
+    bool local_result_is_ok = true;
+
+    const auto a0(x);
+
+    #if defined(__clang__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+    #endif
+
+    {
+      local_unknown_integer_type a = a0; a += a; // NOLINT(clang-diagnostic-self-assign-overloaded)
+
+      local_result_is_ok &= (a == (2U * a0));
+    }
+
+    {
+      local_unknown_integer_type a = a0; a -= a; // NOLINT(clang-diagnostic-self-assign-overloaded)
+
+      local_result_is_ok &= (a == 0U);
+    }
+
+    {
+      local_unknown_integer_type a = a0; a /= a; // NOLINT(clang-diagnostic-self-assign-overloaded)
+
+      local_result_is_ok &= (a == 1U);
+    }
+
+    #if defined(__clang__)
+    #pragma GCC diagnostic pop
+    #endif
+
+    return local_result_is_ok;
+  }
+
+  template<typename UnknownIntegerType>
+  WIDE_INTEGER_CONSTEXPR auto test_uintwide_t_spot_values_from_pull_request_130() -> bool
+  {
+    // See also https://github.com/ckormanyos/wide-integer/pull/130
+
+    using local_unknown_integer_type = UnknownIntegerType;
+
+    using limits = std::numeric_limits<local_unknown_integer_type>;
+
+    WIDE_INTEGER_CONSTEXPR auto expected
+    {
+      -1 - limits::max()
+    };
+
+    WIDE_INTEGER_CONSTEXPR auto actual
+    {
+      limits::lowest()
+    };
+
+    WIDE_INTEGER_CONSTEXPR bool b_ok = (expected == actual);
+
+    return b_ok;
+  }
+} // namespace local
+
+auto math::wide_integer::test_uintwide_t_spot_values() -> bool // NOLINT(readability-function-cognitive-complexity)
 {
   bool result_is_ok = true;
+
+  {
+    // See also https://github.com/ckormanyos/wide-integer/issues/90
+
+    using math::wide_integer::uint128_t;
+    using math::wide_integer::int128_t;
+
+    // Get randoms via:
+    // RandomInteger[{100000000000000000000000000000000000, 10000000000000000000000000000000000000}]
+
+    {
+      WIDE_INTEGER_CONSTEXPR uint128_t u_sep("6'216'049'444'209'020'458'323'688'259'792'241'931");
+      WIDE_INTEGER_CONSTEXPR uint128_t u    ("6216049444209020458323688259792241931");
+
+      WIDE_INTEGER_CONSTEXPR uint128_t n_sep("-3000'424'814'887'742'920'043'278'044'817'737'744");
+      WIDE_INTEGER_CONSTEXPR uint128_t n    ("-3000424814887742920043278044817737744");
+
+      // BaseForm[6216049444209020458323688259792241931, 16]
+      // 4ad2ae64368b98a810635e9cd49850b_16
+      WIDE_INTEGER_CONSTEXPR uint128_t h_sep("0x4'AD'2A'E6'43'68'B9'8A'81'06'35'E9'CD'49'85'0B");
+
+      result_is_ok &= (u_sep == u);
+      result_is_ok &= (n_sep == n);
+      result_is_ok &= (h_sep == u);
+
+      #if(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST == 1)
+      static_assert(u_sep == u, "Error: Static check of construction via string with digit separators fails");
+      static_assert(n_sep == n, "Error: Static check of construction via string with digit separators fails");
+      static_assert(h_sep == u, "Error: Static check of construction via string with digit separators fails");
+      #endif
+    }
+  }
+
+  {
+    // See also https://github.com/ckormanyos/wide-integer/issues/145#issuecomment-1006374713
+
+    using math::wide_integer::uint128_t;
+    using math::wide_integer::int128_t;
+
+    // Get randoms via:
+    // RandomInteger[{100000000000000000000000000000000000, 10000000000000000000000000000000000000}]
+
+    WIDE_INTEGER_CONSTEXPR uint128_t u0("3076659267683009403742876678609501102");
+    WIDE_INTEGER_CONSTEXPR uint128_t u1("9784355713321885697254484081284759103");
+    WIDE_INTEGER_CONSTEXPR uint128_t u2("1759644461251476961796845209840363274");
+
+    result_is_ok &= local::test_uintwide_t_spot_values_from_issue_145(u0);
+    result_is_ok &= local::test_uintwide_t_spot_values_from_issue_145(u1);
+    result_is_ok &= local::test_uintwide_t_spot_values_from_issue_145(u2);
+
+    WIDE_INTEGER_CONSTEXPR int128_t n0("-3076659267683009403742876678609501102");
+    WIDE_INTEGER_CONSTEXPR int128_t n1("-9784355713321885697254484081284759103");
+    WIDE_INTEGER_CONSTEXPR int128_t n2("-1759644461251476961796845209840363274");
+
+    result_is_ok &= local::test_uintwide_t_spot_values_from_issue_145(n0);
+    result_is_ok &= local::test_uintwide_t_spot_values_from_issue_145(n1);
+    result_is_ok &= local::test_uintwide_t_spot_values_from_issue_145(n2);
+  }
+
+  {
+    // See also https://github.com/ckormanyos/wide-integer/issues/154
+
+    {
+      using local_uint64_type    = math::wide_integer::uint64_t;
+      using local_uint128_type   = math::wide_integer::uint128_t;
+      using local_uint512_type   = math::wide_integer::uint512_t;
+      using local_uint1024_type  = math::wide_integer::uint1024_t;
+      using local_uint2048_type  = math::wide_integer::uint2048_t;
+      using local_uint4096_type  = math::wide_integer::uint4096_t;
+      using local_uint8192_type  = math::wide_integer::uint8192_t;
+      using local_uint16384_type = math::wide_integer::uint16384_t;
+      using local_uint32768_type = math::wide_integer::uint32768_t;
+      using local_uint65536_type = math::wide_integer::uint65536_t;
+
+      #if(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST == 1)
+      static_assert((std::numeric_limits<local_uint64_type   >::max)() != 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint128_type  >::max)() != 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint512_type  >::max)() != 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint1024_type >::max)() != 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint2048_type >::max)() != 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint4096_type >::max)() != 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint8192_type >::max)() != 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint16384_type>::max)() != 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint32768_type>::max)() != 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint65536_type>::max)() != 0U, "Error: Static check of convenience type fails");
+
+      static_assert((std::numeric_limits<local_uint64_type   >::min)() == 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint128_type  >::min)() == 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint512_type  >::min)() == 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint1024_type >::min)() == 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint2048_type >::min)() == 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint4096_type >::min)() == 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint8192_type >::min)() == 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint16384_type>::min)() == 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint32768_type>::min)() == 0U, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_uint65536_type>::min)() == 0U, "Error: Static check of convenience type fails");
+      #else
+      assert((std::numeric_limits<local_uint64_type   >::max)() != 0U); // NOLINT
+      assert((std::numeric_limits<local_uint128_type  >::max)() != 0U); // NOLINT
+      assert((std::numeric_limits<local_uint512_type  >::max)() != 0U); // NOLINT
+      assert((std::numeric_limits<local_uint1024_type >::max)() != 0U); // NOLINT
+      assert((std::numeric_limits<local_uint2048_type >::max)() != 0U); // NOLINT
+      assert((std::numeric_limits<local_uint4096_type >::max)() != 0U); // NOLINT
+      assert((std::numeric_limits<local_uint8192_type >::max)() != 0U); // NOLINT
+      assert((std::numeric_limits<local_uint16384_type>::max)() != 0U); // NOLINT
+      assert((std::numeric_limits<local_uint32768_type>::max)() != 0U); // NOLINT
+      assert((std::numeric_limits<local_uint65536_type>::max)() != 0U); // NOLINT
+
+      assert((std::numeric_limits<local_uint64_type   >::min)() == 0U); // NOLINT
+      assert((std::numeric_limits<local_uint128_type  >::min)() == 0U); // NOLINT
+      assert((std::numeric_limits<local_uint512_type  >::min)() == 0U); // NOLINT
+      assert((std::numeric_limits<local_uint1024_type >::min)() == 0U); // NOLINT
+      assert((std::numeric_limits<local_uint2048_type >::min)() == 0U); // NOLINT
+      assert((std::numeric_limits<local_uint4096_type >::min)() == 0U); // NOLINT
+      assert((std::numeric_limits<local_uint8192_type >::min)() == 0U); // NOLINT
+      assert((std::numeric_limits<local_uint16384_type>::min)() == 0U); // NOLINT
+      assert((std::numeric_limits<local_uint32768_type>::min)() == 0U); // NOLINT
+      assert((std::numeric_limits<local_uint65536_type>::min)() == 0U); // NOLINT
+      #endif
+    }
+
+    {
+      using local_int64_type    = math::wide_integer::int64_t;
+      using local_int128_type   = math::wide_integer::int128_t;
+      using local_int512_type   = math::wide_integer::int512_t;
+      using local_int1024_type  = math::wide_integer::int1024_t;
+      using local_int2048_type  = math::wide_integer::int2048_t;
+      using local_int4096_type  = math::wide_integer::int4096_t;
+      using local_int8192_type  = math::wide_integer::int8192_t;
+      using local_int16384_type = math::wide_integer::int16384_t;
+      using local_int32768_type = math::wide_integer::int32768_t;
+      using local_int65536_type = math::wide_integer::int65536_t;
+
+      #if(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST == 1)
+      static_assert((std::numeric_limits<local_int64_type   >::max)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int128_type  >::max)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int512_type  >::max)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int1024_type >::max)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int2048_type >::max)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int4096_type >::max)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int8192_type >::max)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int16384_type>::max)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int32768_type>::max)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int65536_type>::max)() != 0, "Error: Static check of convenience type fails");
+
+      static_assert((std::numeric_limits<local_int64_type   >::min)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int128_type  >::min)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int512_type  >::min)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int1024_type >::min)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int2048_type >::min)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int4096_type >::min)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int8192_type >::min)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int16384_type>::min)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int32768_type>::min)() != 0, "Error: Static check of convenience type fails");
+      static_assert((std::numeric_limits<local_int65536_type>::min)() != 0, "Error: Static check of convenience type fails");
+      #else
+      assert((std::numeric_limits<local_int64_type   >::max)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int128_type  >::max)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int512_type  >::max)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int1024_type >::max)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int2048_type >::max)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int4096_type >::max)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int8192_type >::max)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int16384_type>::max)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int32768_type>::max)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int65536_type>::max)() != 0); // NOLINT
+
+      assert((std::numeric_limits<local_int64_type   >::min)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int128_type  >::min)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int512_type  >::min)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int1024_type >::min)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int2048_type >::min)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int4096_type >::min)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int8192_type >::min)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int16384_type>::min)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int32768_type>::min)() != 0); // NOLINT
+      assert((std::numeric_limits<local_int65536_type>::min)() != 0); // NOLINT
+      #endif
+    }
+
+    {
+      using local_uint131072_type = math::wide_integer::uintwide_t<131072, std::uint32_t, std::allocator<void>, false>;
+
+      local_uint131072_type u(123U);
+      local_uint131072_type v( 56U);
+
+      // Multiply 123^256.
+      u *= u; u *= u; u *= u; u *= u;
+      u *= u; u *= u; u *= u; u *= u;
+
+      // Multiply 56^256.
+      v *= v; v *= v; v *= v; v *= v;
+      v *= v; v *= v; v *= v; v *= v;
+
+      {
+        std::stringstream strm;
+
+        // Divide 123^256 / 56^256 and verify the integral result.
+        local_uint131072_type w = u / v;
+
+        strm << w;
+
+        result_is_ok &=
+          (strm.str() == "3016988223108505362607102560314821693738482648596342283928988093842474437457679828842200");
+      }
+    }
+  }
+
+  {
+    // See also https://github.com/ckormanyos/wide-integer/pull/134
+
+    #if (defined(__clang__) && (__clang_major__ >= 10)) && (defined(__cplusplus) && (__cplusplus > 201703L))
+      #if defined(__x86_64__)
+      static_assert(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST == 1, "Error: clang constexpr is not properly configured");
+      #endif
+    #endif
+  }
+
+  {
+    // See also https://github.com/ckormanyos/wide-integer/pull/130
+
+    // The exact issue motivating this PR turned out to be
+    // an incorect report. The tests, however, are useful
+    // and these have been integrated into _spot_values().
+
+    {
+      using type = math::wide_integer::uintwide_t<64, std::uint32_t, void, true>;
+
+      result_is_ok &= local::test_uintwide_t_spot_values_from_pull_request_130<type>();
+
+      #if(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST == 1)
+      static_assert(local::test_uintwide_t_spot_values_from_pull_request_130<type>(), "Error: Check conditions surrounding issue 130");
+      #endif
+    }
+
+    {
+      using type = math::wide_integer::uintwide_t<64, std::uint8_t, void, true>;
+
+      result_is_ok &= local::test_uintwide_t_spot_values_from_pull_request_130<type>();
+
+      #if(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST == 1)
+      static_assert(local::test_uintwide_t_spot_values_from_pull_request_130<type>(), "Error: Check conditions surrounding issue 130");
+      #endif
+    }
+
+    {
+      using type = math::wide_integer::uintwide_t<256, std::uint32_t, void, true>;
+
+      result_is_ok &= local::test_uintwide_t_spot_values_from_pull_request_130<type>();
+
+      #if(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST == 1)
+      static_assert(local::test_uintwide_t_spot_values_from_pull_request_130<type>(), "Error: Check conditions surrounding issue 130");
+      #endif
+    }
+
+    {
+      using type = std::int32_t;
+
+      result_is_ok &= local::test_uintwide_t_spot_values_from_pull_request_130<type>();
+
+      #if(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST == 1)
+      static_assert(local::test_uintwide_t_spot_values_from_pull_request_130<type>(), "Error: Check conditions surrounding issue 130");
+      #endif
+    }
+
+    {
+      using type = std::int64_t;
+
+      result_is_ok &= local::test_uintwide_t_spot_values_from_pull_request_130<type>();
+
+      #if(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST == 1)
+      static_assert(local::test_uintwide_t_spot_values_from_pull_request_130<type>(), "Error: Check conditions surrounding issue 130");
+      #endif
+    }
+  }
+
+  {
+    using math::wide_integer::uint256_t;
+
+    // FromDigits["C9DD3EA24800F584CB28C25CC0E6FF1",16]
+    // 16770224695321632575655872732632870897
+    const uint256_t a("0xC9DD3EA24800F584CB28C25CC0E6FF1");
+
+    // FromDigits["1E934A2EEA60A2AD14ECCAE7AD82C069",16]
+    // 40641612127094559121321599356729737321
+    const uint256_t b("0x1E934A2EEA60A2AD14ECCAE7AD82C069");
+
+    const uint256_t lm = lcm(a - 1U, b - 1U);
+    const uint256_t gd = gcd(a - 1U, b - 1U);
+
+    // LCM[16770224695321632575655872732632870897 - 1, 40641612127094559121321599356729737321 - 1]
+    result_is_ok &= (lm == uint256_t("28398706972978513348490390087175345493497748446743697820448222113648043280"));
+
+    // GCD[16770224695321632575655872732632870897 - 1, 40641612127094559121321599356729737321 - 1]
+    result_is_ok &= (gd == 24U);
+  }
+
+  {
+    // See also https://github.com/ckormanyos/wide-integer/issues/111
+
+    {
+      using math::wide_integer::int256_t;
+
+      int256_t a("-578960446186580977117854925043439539266349923328202820197287920"
+                 "03956564819968");
+
+      int256_t a_itself = (std::numeric_limits<int256_t>::min)();
+
+      result_is_ok &= (a == (std::numeric_limits<int256_t>::min)());
+
+      int256_t b("1");
+
+      const int256_t a_div_b = a / b;
+
+      result_is_ok &= (a_div_b == a);
+      result_is_ok &= (a / a_itself == b);
+    }
+
+    {
+      using my_int32_t = math::wide_integer::uintwide_t<32U, std::uint32_t, void, true>;
+
+      my_int32_t c("-2147483648");
+
+      my_int32_t c_itself = (std::numeric_limits<my_int32_t>::min)();
+
+      result_is_ok &= (c == (std::numeric_limits<my_int32_t>::min)());
+
+      my_int32_t d("1");
+
+      const my_int32_t c_div_d = c / d;
+      result_is_ok &= (c / c_itself == d);
+
+      result_is_ok &= (c_div_d == c);
+    }
+  }
 
   {
     // See also https://github.com/ckormanyos/wide-integer/issues/108
@@ -69,6 +473,7 @@ bool math::wide_integer::test_uintwide_t_spot_values()
 
   {
     // See also https://github.com/ckormanyos/wide-integer/issues/63
+
     WIDE_INTEGER_CONSTEXPR auto
     input
     {
@@ -78,7 +483,7 @@ bool math::wide_integer::test_uintwide_t_spot_values()
       }
     };
 
-    WIDE_INTEGER_CONSTEXPR bool result_ll_is_ok = (static_cast<long long>(input) == 1729348762983LL);
+    WIDE_INTEGER_CONSTEXPR bool result_ll_is_ok = (static_cast<long long>(input) == 1729348762983LL); // NOLINT(google-runtime-int)
 
     #if defined(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST) && (WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST != 0)
     static_assert(result_ll_is_ok, "Error: test_uintwide_t_spot_values unsigned not OK!");
@@ -88,7 +493,7 @@ bool math::wide_integer::test_uintwide_t_spot_values()
   }
 
   {
-    using uint512_t = math::wide_integer::uint512_t;
+    using math::wide_integer::uint512_t;
 
     const uint512_t a("698937339790347543053797400564366118744312537138445607919548628175822115805812983955794321304304417541511379093392776018867245622409026835324102460829431");
     const uint512_t b("100041341335406267530943777943625254875702684549707174207105689918734693139781");
@@ -110,8 +515,7 @@ bool math::wide_integer::test_uintwide_t_spot_values()
   }
 
   {
-    using uint256_t =
-      math::wide_integer::uintwide_t<256U, std::uint32_t>;
+    using math::wide_integer::uint256_t;
 
     static_assert(std::numeric_limits<uint256_t>::digits == 256,
                   "Error: Incorrect digit count for this example");

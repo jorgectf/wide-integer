@@ -1,16 +1,16 @@
 ///////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2018 - 2020.                 //
+//  Copyright Christopher Kormanyos 2018 - 2022.                 //
 //  Distributed under the Boost Software License,                //
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt          //
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)             //
 ///////////////////////////////////////////////////////////////////
 
+#include <examples/example_uintwide_t.h>
 #include <math/wide_integer/uintwide_t.h>
-#include <math/wide_integer/uintwide_t_examples.h>
 
-bool math::wide_integer::example005_powm()
+auto math::wide_integer::example005_powm() -> bool
 {
-  using uint256_t = math::wide_integer::uint256_t;
+  using math::wide_integer::uint256_t;
 
   WIDE_INTEGER_CONSTEXPR uint256_t b("0xDA4033C9B1B0675C20B7879EA63FFFBEEBEC3F89F78D22C393FAD98E7AE9BF69");
   WIDE_INTEGER_CONSTEXPR uint256_t p("0xA4748AD2DAFEED29C73927BD0945EF45EFEC9DAA95CC59390D406FC27236A174");

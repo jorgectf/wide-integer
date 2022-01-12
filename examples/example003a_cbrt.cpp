@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2018 - 2020.                 //
+//  Copyright Christopher Kormanyos 2018 - 2022.                 //
 //  Distributed under the Boost Software License,                //
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt          //
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)             //
@@ -7,10 +7,10 @@
 
 #include <string>
 
+#include <examples/example_uintwide_t.h>
 #include <math/wide_integer/uintwide_t.h>
-#include <math/wide_integer/uintwide_t_examples.h>
 
-bool math::wide_integer::example003a_cbrt()
+auto math::wide_integer::example003a_cbrt() -> bool
 {
   using uint11264_t = math::wide_integer::uintwide_t<11264U, std::uint32_t, std::allocator<std::uint32_t>>;
 

@@ -1,5 +1,5 @@
-///////////////////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2019 - 2021.
+﻿///////////////////////////////////////////////////////////////////////////////
+//  Copyright Christopher Kormanyos 2019 - 2022.
 //  Distributed under the Boost Software License,
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -14,7 +14,7 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
 
-#if defined(__clang__) && !defined(__APPLE__)
+#if (defined(__clang__) && (__clang_major__ > 9)) && !defined(__APPLE__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #endif
@@ -22,11 +22,11 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/multiprecision/uintwide_t_backend.hpp>
 
-#include <math/wide_integer/uintwide_t_test.h>
+#include <test/test_uintwide_t.h>
 
-typedef boost::multiprecision::number<boost::multiprecision::uintwide_t_backend<1024U>,
-                                      boost::multiprecision::et_off>
-local_uint_type;
+using local_uint_type =
+  boost::multiprecision::number<boost::multiprecision::uintwide_t_backend<1024U>,
+                                boost::multiprecision::et_off>;
 
 using boost_uint_backend_type =
   boost::multiprecision::cpp_int_backend<1024,
@@ -36,7 +36,7 @@ using boost_uint_backend_type =
 using boost_uint_type = boost::multiprecision::number<boost_uint_backend_type,
                                                       boost::multiprecision::et_off>;
 
-bool math::wide_integer::test_uintwide_t_boost_backend()
+auto math::wide_integer::test_uintwide_t_boost_backend() -> bool
 {
   bool result_is_ok = true;
 
@@ -54,9 +54,18 @@ bool math::wide_integer::test_uintwide_t_boost_backend()
     const boost_uint_type boost_control("93326215443944152681699238856266700490715968264381621468592963895217599993229915608941463976156518286253697920827223758251185210916864000000000000000000000000");
 
     const bool local_control_is_ok = (u == local_control);
-    const bool boost_control_is_ok = (boost::lexical_cast<std::string>(u) == boost::lexical_cast<std::string>(boost_control));
 
-    result_is_ok &= (local_control_is_ok && boost_control_is_ok);
+    {
+      std::stringstream strm_lhs;
+      strm_lhs << u;
+
+      std::stringstream strm_rhs;
+      strm_rhs << boost_control;
+
+      const bool boost_control_is_ok = (strm_lhs.str() == strm_rhs.str());
+
+      result_is_ok &= (local_control_is_ok && boost_control_is_ok);
+    }
 
     // Test divide-by-limb.
     u /= 10U;
@@ -78,14 +87,14 @@ bool math::wide_integer::test_uintwide_t_boost_backend()
     result_is_ok &= result_cu_is_ok;
 
     #if defined(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST) && (WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST != 0)
-    static_assert(result_cu_is_ok == true, "Error: test_uintwide_t_boost_backend not OK!");
+    static_assert(result_cu_is_ok, "Error: test_uintwide_t_boost_backend not OK!");
     #endif
   }
 
   return result_is_ok;
 }
 
-#if defined(__clang__) && !defined(__APPLE__)
+#if (defined(__clang__) && (__clang_major__ > 9)) && !defined(__APPLE__)
 #pragma GCC diagnostic pop
 #endif
 

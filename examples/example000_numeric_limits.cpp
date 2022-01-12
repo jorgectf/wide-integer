@@ -5,23 +5,23 @@
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)             //
 ///////////////////////////////////////////////////////////////////
 
+#include <examples/example_uintwide_t.h>
 #include <math/wide_integer/uintwide_t.h>
-#include <math/wide_integer/uintwide_t_examples.h>
 
 namespace local
 {
-  using uint64_t = math::wide_integer::uint64_t;
-  using  int64_t = math::wide_integer::int64_t;
-  using uint32_t = math::wide_integer::uintwide_t<32U, std::uint8_t, void, false>;
-  using  int32_t = math::wide_integer::uintwide_t<32U, std::uint8_t, void, true>;
-}
+  using math::wide_integer::uint64_t;
+  using math::wide_integer::int64_t;
+  using uint32_t = math::wide_integer::uintwide_t<math::wide_integer::size_t(UINT32_C(32)), std::uint8_t, void, false>;
+  using  int32_t = math::wide_integer::uintwide_t<math::wide_integer::size_t(UINT32_C(32)), std::uint8_t, void, true>;
+} // namespace local
 
-bool math::wide_integer::example000_numeric_limits()
+auto math::wide_integer::example000_numeric_limits() -> bool
 {
   bool result_is_ok = true;
 
   {
-    using uint256_t = math::wide_integer::uint256_t;
+    using math::wide_integer::uint256_t;
 
     WIDE_INTEGER_CONSTEXPR uint256_t my_max("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
     WIDE_INTEGER_CONSTEXPR uint256_t my_min(0U);
@@ -30,8 +30,8 @@ bool math::wide_integer::example000_numeric_limits()
          ((std::numeric_limits<uint256_t>::max)  () == my_max)
       && ((std::numeric_limits<uint256_t>::min)  () == my_min)
       && ( std::numeric_limits<uint256_t>::lowest() == uint256_t(std::numeric_limits<unsigned>::lowest()))
-      && ( std::numeric_limits<uint256_t>::digits   == 256)
-      && ( std::numeric_limits<uint256_t>::digits10 == 77)
+      && ( std::numeric_limits<uint256_t>::digits   == int(INT32_C(256)))
+      && ( std::numeric_limits<uint256_t>::digits10 == int(INT32_C(77)))
       ;
 
     #if defined(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST) && (WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST != 0)
@@ -42,7 +42,7 @@ bool math::wide_integer::example000_numeric_limits()
   }
 
   {
-    using int256_t = math::wide_integer::int256_t;
+    using math::wide_integer::int256_t;
 
     WIDE_INTEGER_CONSTEXPR int256_t my_max   ("0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
     WIDE_INTEGER_CONSTEXPR int256_t my_min   ("-57896044618658097711785492504343953926634992332820282019728792003956564819968");
@@ -52,8 +52,8 @@ bool math::wide_integer::example000_numeric_limits()
          ((std::numeric_limits<int256_t>::max)  () == my_max)
       && ((std::numeric_limits<int256_t>::min)  () == my_min)
       && ( std::numeric_limits<int256_t>::lowest() == my_lowest)
-      && ( std::numeric_limits<int256_t>::digits   == 255)
-      && ( std::numeric_limits<int256_t>::digits10 == 76)
+      && ( std::numeric_limits<int256_t>::digits   == int(INT32_C(255)))
+      && ( std::numeric_limits<int256_t>::digits10 == int(INT32_C(76)))
       ;
 
     #if defined(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST) && (WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST != 0)

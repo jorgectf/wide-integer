@@ -1,4 +1,4 @@
-Wide-integer
+﻿Wide-integer
 [![Build Status](https://github.com/ckormanyos/wide-integer/actions/workflows/wide_integer.yml/badge.svg)](https://github.com/ckormanyos/wide-integer/actions)
 ==================
 
@@ -26,8 +26,8 @@ elementary and number theoretical functions such as root finding,
 random distribution, Miller-Rabin primality testing,
 greatest common denominator (GCD) and more.
 
-Inclusion of a single C++11 header file (plus one additional
-utility header file) is all that is needed for using wide-integer,
+Inclusion of a single C++11 header file
+is all that is needed for using wide-integer,
 as shown in the [examples](./examples).
 
 ## Implementation goals
@@ -41,6 +41,13 @@ as shown in the [examples](./examples).
   - C++20 `constexpr`-_ness_ for construction, cast to built-in types, binary arithmetic, comparison operations, some elementary functions and more.
 
 ## Quick start
+
+When working in your own project with wide-integer,
+using the [`uintwide_t.h` header](./math/wide_integer/uintwide_t.h)
+is straightforward. Identify the header within
+its directory. Include this header path to the compiler's set
+of include paths or in your project.
+Then simply `#include <uintwide_t.h>` the normal C++ way.
 
 Easy application follows via traditional C-style typedef or C++11 alias
 such as `uint512_t`. An instance of the defined type can be used very much
@@ -124,6 +131,7 @@ on how to use wide-integer.
   - ![`example003a_cbrt`](./examples/example003a_cbrt.cpp) computes a cube root.
   - ![`example004_rootk_pow.cpp`](./examples/example004_rootk_pow.cpp) computes an integral seventh root and its corresponding power. A negative-valued cube root is also tested.
   - ![`example005_powm.cpp`](./examples/example005_powm.cpp) tests the power-modulus function `powm`.
+  - ![`example005a_pow_factors_of_p99.cpp`](./examples/example005a_pow_factors_of_p99.cpp) verifies a beautiful, known prime factorization result from a classic tabulated value.
   - ![`example006_gcd.cpp`](./examples/example006_gcd.cpp) tests the computation of a greatest common divisor `gcd`.
   - ![`example007_random_generator.cpp`](./examples/example007_random_generator.cpp) computes some large pseudo-random integers.
   - ![`example008_miller_rabin_prime.cpp`](./examples/example008_miller_rabin_prime.cpp) implements primality testing via Miller-Rabin.
@@ -133,6 +141,7 @@ on how to use wide-integer.
   - ![`example009b_timed_mul_8_by_8.cpp`](./examples/example009b_timed_mul_8_by_8.cpp) measures, yet again, multiplication timings for the special case of wide integers having 8 limbs.
   - ![`example010_uint48_t.cpp`](./examples/example010_uint48_t.cpp) verifies 48-bit integer caluclations.
   - ![`example011_uint24_t.cpp`](./examples/example011_uint24_t.cpp) performs calculations with 24-bits, which is definitely on the small side of the range of wide-integer.
+  - ![`example012_rsa_crypto.cpp`](./examples/example012_rsa_crypto.cpp) performs cryptographic calculations with 2048-bits, exploring a standardized test case.
 
 ## Building, testing and CI
 
@@ -142,13 +151,6 @@ on how to use wide-integer.
 The recent status of building and executing the tests and examples
 in Continuous Integration (CI) is always shown in the Build Status banner.
 
-When working in your own project with wide-integer,
-using the [`uintwide_t.h` header](./math/wide_integer/uintwide_t.h)
-is straightforward. Identify the header within
-its directory. Include this header path to the compiler's set
-of include paths or in your project.
-Then simply `#include <uintwide_t.h>` the normal C++ way.
-
 It is also possible, if desired, to build and execute
 the tests and examples using various different OS/compiler
 combinations.
@@ -157,7 +159,8 @@ combinations.
 
 Building and running the tests and examples can be accomplished
 using the Microsoft VisualStudio solution workspace provided
-in `wide_integer.sln` located in the project's root directory.
+in `wide_integer.sln`. The MSVC solution file
+is located in the project's root directory.
 
 ### Build with CMake
 
@@ -177,11 +180,12 @@ can be executed with a simple, but rather lengthy, command line
 entered manually from the command shell.
 Consider, for instance, building in Linux with GCC in the presence of `unsigned` `__int128`.
 Furthermore, the Boost.Multiprecision library is used for some examples and tests.
-In this build example, Boost intended to be located
+In this build example, Boost is intended to be located
 in the made-up directory `../boost-root`,
 which needs to be adapted according to the actual location of Boost.
-The command line below illustrates how to build all wide_integer
-tests and examples directly from the *nix command line.
+The command line below illustrates how to build all
+of the wide_integer tests and examples directly
+from the *nix command line.
 
 ```sh
 cd wide_integer
@@ -206,6 +210,7 @@ test/test_uintwide_t_boost_backend.cpp      \
 test/test_uintwide_t_edge_cases.cpp         \
 test/test_uintwide_t_examples.cpp           \
 test/test_uintwide_t_float_convert.cpp      \
+test/test_uintwide_t_int_convert.cpp        \
 test/test_uintwide_t_n_base.cpp             \
 test/test_uintwide_t_n_binary_ops_base.cpp  \
 test/test_uintwide_t_spot_values.cpp        \
@@ -214,10 +219,11 @@ examples/example000a_builtin_convert.cpp    \
 examples/example001_mul_div.cpp             \
 examples/example001a_div_mod.cpp            \
 examples/example002_shl_shr.cpp             \
-examples/example003a_cbrt.cpp               \
 examples/example003_sqrt.cpp                \
+examples/example003a_cbrt.cpp               \
 examples/example004_rootk_pow.cpp           \
 examples/example005_powm.cpp                \
+examples/example005a_pow_factors_of_p99     \
 examples/example006_gcd.cpp                 \
 examples/example007_random_generator.cpp    \
 examples/example008_miller_rabin_prime.cpp  \
@@ -227,17 +233,18 @@ examples/example009a_timed_mul_4_by_4.cpp   \
 examples/example009b_timed_mul_8_by_8.cpp   \
 examples/example010_uint48_t.cpp            \
 examples/example011_uint24_t.cpp            \
+examples/example012_rsa_crypto.cpp          \
 -o wide_integer.exe
 ```
 
 ### Testing
 
-Testing is definitely a big issue. A growing test suite in
-continuous support improves conficence in the library,
-providing for tested, efficient functionality on the PC and workstation.
+Testing is definitely a big issue. A growing, supported
+test suite improves confidence in the library.
+It provides for tested, efficient functionality on the PC and workstation.
 The GitHub code is, as mentioned above, delivered with an affiliated MSVC
 project or a variety of other build/make options that use easy-to-understand
-subroutines called from `main()` to exercise the various
+subroutines called from `main()`. These exercise the various
 examples and the full suite of test cases.
 
 CI runs on push and pull request using GitHub Actions.
@@ -274,8 +281,11 @@ enabled or disabled at compile time with the compiler switches:
 ```C
 #define WIDE_INTEGER_DISABLE_IOSTREAM
 #define WIDE_INTEGER_DISABLE_FLOAT_INTEROP
+#define WIDE_INTEGER_DISABLE_IMPLEMENT_UTIL_DYNAMIC_ARRAY
 #define WIDE_INTEGER_HAS_LIMB_TYPE_UINT64
 #define WIDE_INTEGER_HAS_MUL_8_BY_8_UNROLL
+#define WIDE_INTEGER_DISABLE_TRIVIAL_COPY_AND_STD_LAYOUT_CHECKS
+#define WIDE_INTEGER_NAMESPACE
 ```
 
 When working with even the most tiny microcontroller systems,
@@ -301,6 +311,24 @@ The default setting is `WIDE_INTEGER_DISABLE_FLOAT_INTEROP` not set
 and all available functions implementing construction-from,
 cast-to, binary arithmetic with built-in floating-point types
 are enabled.
+
+```C
+#define WIDE_INTEGER_DISABLE_IMPLEMENT_UTIL_DYNAMIC_ARRAY
+```
+
+This macro disables `uintwide_t.h`'s own local implementation
+of the `util::dynamic_array` template class.
+The logic of this macro is negated. Its default setting
+(of being disabled itself) ensures that standalone `uintwide_t.h`
+is free from any additional header dependencies.
+
+The template utility class `util::dynamic_array` is used
+as a storage container for certain instantiations of `uintwide_t`.
+This macro is disabled by default and `uintwide_t.h`
+does actually provide its own local implementation
+of the `util::dynamic_array` template class.
+Otherwise, the header file `<util/utility/util_dynamic_array.h>`
+must be found in the include path.
 
 When working on high-performance systems having `unsigned __int128`
 (an extended-width, yet non-standard data type),
@@ -344,6 +372,44 @@ This macro might improve performance on some target/compiler systems
 by manually unrolling the multiplication loop(s) for
 `uintwide_t` instances having 8 limbs. This macro is disabled
 by default.
+
+```C
+#define WIDE_INTEGER_DISABLE_TRIVIAL_COPY_AND_STD_LAYOUT_CHECKS
+```
+
+This macro disables compile-time checks for `std::is_trivially_copyable`
+and `std::is_standard_layout`. These checks provide assurance
+(among other attributes) that `uintwide_t`'s constructors
+satisfy rules needed for mixed-language C/C++ usage.
+Some older legacy target/compiler systems might have non-standard
+or incomplete STL implementations that lack these compile-time
+templates. For such compilers, it makes sense to deactivate
+these compile-time checks via activation of this macro.
+This macro is disabled by default and both the trivially-copyable
+as well as the standard-layout compile-time checks are active.
+
+```C
+#define WIDE_INTEGER_NAMESPACE
+```
+
+This macro can be used in strict, exacting applications for which
+using the unqualified, global namespace `math` or `::math` is undesired or inacceptable.
+We recall that all parts of the wide-integer implementation,
+such as the `uintwide_t` class and its associated implementation
+details reside within `namespace` `::math::wide_integer`
+Defining the macro `WIDE_INTEGER_NAMESPACE` to be something like,
+for instance, `-DWIDE_INTEGER_NAMESPACE=something_unique` places
+all parts of the wide-integer implementation and its details
+within the prepended outer namespace `something_unique` ---
+as in `namespace` `::something_unique::math::wide_integer`.
+Vary the actual name or nesting depth of the desired prepended
+outer namespace if/as needed for your project.
+
+By default the macro `WIDE_INTEGER_NAMESPACE` is defined
+(but defined to be nothing, i.e., empty).
+In this default state, `namespace` `::math::wide_integer` is used
+and the `uintwide_t` class and its associated implementation
+details reside therein.
 
 ## Detailed examples
 

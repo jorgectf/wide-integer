@@ -1,4 +1,4 @@
-Wide-integer
+﻿Wide-integer
 [![Build Status](https://github.com/ckormanyos/wide-integer/actions/workflows/wide_integer.yml/badge.svg)](https://github.com/ckormanyos/wide-integer/actions)
 ==================
 
@@ -41,6 +41,13 @@ as shown in the [examples](./examples).
   - C++20 `constexpr`-_ness_ for construction, cast to built-in types, binary arithmetic, comparison operations, some elementary functions and more.
 
 ## Quick start
+
+When working in your own project with wide-integer,
+using the [`uintwide_t.h` header](./math/wide_integer/uintwide_t.h)
+is straightforward. Identify the header within
+its directory. Include this header path to the compiler's set
+of include paths or in your project.
+Then simply `#include <uintwide_t.h>` the normal C++ way.
 
 Easy application follows via traditional C-style typedef or C++11 alias
 such as `uint512_t`. An instance of the defined type can be used very much
@@ -143,13 +150,6 @@ on how to use wide-integer.
 
 The recent status of building and executing the tests and examples
 in Continuous Integration (CI) is always shown in the Build Status banner.
-
-When working in your own project with wide-integer,
-using the [`uintwide_t.h` header](./math/wide_integer/uintwide_t.h)
-is straightforward. Identify the header within
-its directory. Include this header path to the compiler's set
-of include paths or in your project.
-Then simply `#include <uintwide_t.h>` the normal C++ way.
 
 It is also possible, if desired, to build and execute
 the tests and examples using various different OS/compiler
@@ -284,6 +284,8 @@ enabled or disabled at compile time with the compiler switches:
 #define WIDE_INTEGER_DISABLE_IMPLEMENT_UTIL_DYNAMIC_ARRAY
 #define WIDE_INTEGER_HAS_LIMB_TYPE_UINT64
 #define WIDE_INTEGER_HAS_MUL_8_BY_8_UNROLL
+#define WIDE_INTEGER_DISABLE_TRIVIAL_COPY_AND_STD_LAYOUT_CHECKS
+#define WIDE_INTEGER_NAMESPACE
 ```
 
 When working with even the most tiny microcontroller systems,
@@ -310,12 +312,6 @@ and all available functions implementing construction-from,
 cast-to, binary arithmetic with built-in floating-point types
 are enabled.
 
-When working on high-performance systems having `unsigned __int128`
-(an extended-width, yet non-standard data type),
-a 64-bit limb of type `uint64_t` can be used.
-Enable the 64-bit limb type on such systems
-with the compiler switch:
-
 ```C
 #define WIDE_INTEGER_DISABLE_IMPLEMENT_UTIL_DYNAMIC_ARRAY
 ```
@@ -333,6 +329,12 @@ does actually provide its own local implementation
 of the `util::dynamic_array` template class.
 Otherwise, the header file `<util/utility/util_dynamic_array.h>`
 must be found in the include path.
+
+When working on high-performance systems having `unsigned __int128`
+(an extended-width, yet non-standard data type),
+a 64-bit limb of type `uint64_t` can be used.
+Enable the 64-bit limb type on such systems
+with the compiler switch:
 
 ```C
 #define WIDE_INTEGER_HAS_LIMB_TYPE_UINT64
@@ -370,6 +372,44 @@ This macro might improve performance on some target/compiler systems
 by manually unrolling the multiplication loop(s) for
 `uintwide_t` instances having 8 limbs. This macro is disabled
 by default.
+
+```C
+#define WIDE_INTEGER_DISABLE_TRIVIAL_COPY_AND_STD_LAYOUT_CHECKS
+```
+
+This macro disables compile-time checks for `std::is_trivially_copyable`
+and `std::is_standard_layout`. These checks provide assurance
+(among other attributes) that `uintwide_t`'s constructors
+satisfy rules needed for mixed-language C/C++ usage.
+Some older legacy target/compiler systems might have non-standard
+or incomplete STL implementations that lack these compile-time
+templates. For such compilers, it makes sense to deactivate
+these compile-time checks via activation of this macro.
+This macro is disabled by default and both the trivially-copyable
+as well as the standard-layout compile-time checks are active.
+
+```C
+#define WIDE_INTEGER_NAMESPACE
+```
+
+This macro can be used in strict, exacting applications for which
+using the unqualified, global namespace `math` or `::math` is undesired or inacceptable.
+We recall that all parts of the wide-integer implementation,
+such as the `uintwide_t` class and its associated implementation
+details reside within `namespace` `::math::wide_integer`
+Defining the macro `WIDE_INTEGER_NAMESPACE` to be something like,
+for instance, `-DWIDE_INTEGER_NAMESPACE=something_unique` places
+all parts of the wide-integer implementation and its details
+within the prepended outer namespace `something_unique` ---
+as in `namespace` `::something_unique::math::wide_integer`.
+Vary the actual name or nesting depth of the desired prepended
+outer namespace if/as needed for your project.
+
+By default the macro `WIDE_INTEGER_NAMESPACE` is defined
+(but defined to be nothing, i.e., empty).
+In this default state, `namespace` `::math::wide_integer` is used
+and the `uintwide_t` class and its associated implementation
+details reside therein.
 
 ## Detailed examples
 
@@ -636,3 +676,14 @@ negative arguments in number theoretical functions.
   - Miller-Rabin primality testing treats negative inetegers as positive when testing for prime, thus extending the set of primes <img src="https://render.githubusercontent.com/render/math?math=p\,\in\,\mathbb{Z}">.
   - MSB/LSB (most/least significant bit) do not differentiate between positive or negative argument such that MSB of a negative integer will be the highest bit of the corresponding unsigned type.
   - Printing both positive-valued and negative-valued signed integers in hexadecimal format is supported. When printing negative-valued, signed  `uintwide_t` in hexadecimal format, the sign bit and all other bits are treated as if the integer were unsigned. The negative sign is not explicitly shown when using hexadecimal format, even if the underlying integer is signed and negative-valued. A potential positive sign, however, will be shown for positive-valued signed integers in hexadecimal form in the presence of `std::showpos`.
+
+### Conversion rules
+
+The following design choices have been implemented when implementing
+conversion rules.
+
+  - Construction-from built-in types is non-explicit (considered widening).
+  - Cast-to built-in types is explicit (considered narrowing).
+  - Construction-from, cast-to wider/less-wide/signed-unsigned wide-integer types is non-explicit (even if the conversoin is narrowing via having fewer bits).
+  - All wide-integer-types are move constructible.
+  - All wide-integer types having same widths and having the same limb-type, but possibly different sign are move-assignable.

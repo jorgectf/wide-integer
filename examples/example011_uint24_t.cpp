@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2018 - 2020.                 //
+//  Copyright Christopher Kormanyos 2018 - 2022.                 //
 //  Distributed under the Boost Software License,                //
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt          //
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)             //
@@ -10,14 +10,27 @@
 #include <examples/example_uintwide_t.h>
 #include <math/wide_integer/uintwide_t.h>
 
-bool math::wide_integer::example011_uint24_t()
+#if defined(WIDE_INTEGER_NAMESPACE)
+auto WIDE_INTEGER_NAMESPACE::math::wide_integer::example011_uint24_t() -> bool
+#else
+auto math::wide_integer::example011_uint24_t() -> bool
+#endif
 {
-  using uint24_t = math::wide_integer::uintwide_t<24U, std::uint8_t>;
+  #if defined(WIDE_INTEGER_NAMESPACE)
+  using uint24_t = WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<static_cast<WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t>(UINT32_C(24)), std::uint8_t>;
+  #else
+  using uint24_t = math::wide_integer::uintwide_t<static_cast<math::wide_integer::size_t>(UINT32_C(24)), std::uint8_t>;
+  #endif
 
-  using distribution_type  = math::wide_integer::uniform_int_distribution<24U, typename uint24_t::limb_type>;
+  #if defined(WIDE_INTEGER_NAMESPACE)
+  using distribution_type  = WIDE_INTEGER_NAMESPACE::math::wide_integer::uniform_int_distribution<static_cast<WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t>(UINT32_C(24)), typename uint24_t::limb_type>;
+  #else
+  using distribution_type  = math::wide_integer::uniform_int_distribution<static_cast<math::wide_integer::size_t>(UINT32_C(24)), typename uint24_t::limb_type>;
+  #endif
+
   using random_engine_type = std::linear_congruential_engine<std::uint32_t, UINT32_C(48271), UINT32_C(0), UINT32_C(2147483647)>;
 
-  random_engine_type generator(UINT32_C(0xDEADBEEF));
+  random_engine_type generator(UINT32_C(0xDEADBEEF)); // NOLINT(cert-msc32-c,cert-msc51-cpp)
 
   distribution_type distribution;
 
@@ -32,15 +45,15 @@ bool math::wide_integer::example011_uint24_t()
   const uint24_t c_mul = (a * b);
   const uint24_t c_div = (a / b);
 
-  const bool result_is_ok = (   (   (c_add == ((a32 + b32) & 0x00FFFFFFULL))
-                                 && (c_sub == ((a32 - b32) & 0x00FFFFFFULL))
-                                 && (c_mul == ((a32 * b32) & 0x00FFFFFFULL))
-                                 && (c_div == ((a32 / b32) & 0x00FFFFFFULL)))
+  const bool result_is_ok = (   (   (c_add == static_cast<std::uint32_t>(static_cast<std::uint32_t>(a32 + b32) & UINT32_C(0x00FFFFFF)))
+                                 && (c_sub == static_cast<std::uint32_t>(static_cast<std::uint32_t>(a32 - b32) & UINT32_C(0x00FFFFFF)))
+                                 && (c_mul == static_cast<std::uint32_t>(static_cast<std::uint32_t>(a32 * b32) & UINT32_C(0x00FFFFFF)))
+                                 && (c_div == static_cast<std::uint32_t>(static_cast<std::uint32_t>(a32 / b32) & UINT32_C(0x00FFFFFF))))
                              &&
-                                (   ((std::uint64_t) c_add == ((a32 + b32) & 0x00FFFFFFULL))
-                                 && ((std::uint64_t) c_sub == ((a32 - b32) & 0x00FFFFFFULL))
-                                 && ((std::uint64_t) c_mul == ((a32 * b32) & 0x00FFFFFFULL))
-                                 && ((std::uint64_t) c_div == ((a32 / b32) & 0x00FFFFFFULL))));
+                                (   (static_cast<std::uint64_t>(c_add) == static_cast<std::uint64_t>(static_cast<std::uint32_t>(a32 + b32) & UINT32_C(0x00FFFFFF)))
+                                 && (static_cast<std::uint64_t>(c_sub) == static_cast<std::uint64_t>(static_cast<std::uint32_t>(a32 - b32) & UINT32_C(0x00FFFFFF)))
+                                 && (static_cast<std::uint64_t>(c_mul) == static_cast<std::uint64_t>(static_cast<std::uint32_t>(a32 * b32) & UINT32_C(0x00FFFFFF)))
+                                 && (static_cast<std::uint64_t>(c_div) == static_cast<std::uint64_t>(static_cast<std::uint32_t>(a32 / b32) & UINT32_C(0x00FFFFFF)))));
 
   return result_is_ok;
 }
@@ -53,7 +66,11 @@ bool math::wide_integer::example011_uint24_t()
 
 int main()
 {
+  #if defined(WIDE_INTEGER_NAMESPACE)
+  const bool result_is_ok = WIDE_INTEGER_NAMESPACE::wide_integer::example011_uint24_t();
+  #else
   const bool result_is_ok = wide_integer::example011_uint24_t();
+  #endif
 
   std::cout << "result_is_ok: " << std::boolalpha << result_is_ok << std::endl;
 }

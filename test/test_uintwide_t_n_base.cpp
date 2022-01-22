@@ -7,4 +7,9 @@
 
 #include <test/test_uintwide_t_n_base.h>
 
-std::linear_congruential_engine<std::uint32_t, 48271, 0, 2147483647> test_uintwide_t_n_base::my_random_generator;
+auto test_uintwide_t_n_base::my_random_generator() -> test_uintwide_t_n_base::random_engine_type&
+{
+  static random_engine_type my_generator; // NOLINT(cert-msc32-c,cert-msc51-cpp)
+
+  return my_generator;
+}

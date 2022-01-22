@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2018 - 2021.                 //
+//  Copyright Christopher Kormanyos 2018 - 2022.                 //
 //  Distributed under the Boost Software License,                //
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt          //
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)             //
@@ -12,31 +12,38 @@
 #include <examples/example_uintwide_t.h>
 #include <math/wide_integer/uintwide_t.h>
 
-namespace
+namespace local_random
 {
-  template<typename LimbType, typename AllocatorType = void>
-  bool generate()
+  template<typename LimbType,
+           typename AllocatorType = void>
+  auto generate() -> bool
   {
     using random_engine_type = std::mersenne_twister_engine<std::uint64_t,
-                                                            64,
-                                                            312,
-                                                            156,
-                                                            31,
+                                                            static_cast<std::size_t>(UINT32_C( 64)),
+                                                            static_cast<std::size_t>(UINT32_C(312)),
+                                                            static_cast<std::size_t>(UINT32_C(156)),
+                                                            static_cast<std::size_t>(UINT32_C( 31)),
                                                             UINT64_C(0xB5026F5AA96619E9),
-                                                            29,
+                                                            static_cast<std::size_t>(UINT32_C( 29)),
                                                             UINT64_C(0x5555555555555555),
-                                                            17,
+                                                            static_cast<std::size_t>(UINT32_C( 17)),
                                                             UINT64_C(0x71D67FFFEDA60000),
-                                                            37,
+                                                            static_cast<std::size_t>(UINT32_C( 37)),
                                                             UINT64_C(0xFFF7EEE000000000),
-                                                            43,
+                                                            static_cast<std::size_t>(UINT32_C( 43)),
                                                             UINT64_C(6364136223846793005)>;
 
-    using wide_integer_type  = math::wide_integer::uintwide_t<256U, std::uint32_t, AllocatorType>;
+    #if defined(WIDE_INTEGER_NAMESPACE)
+    using wide_integer_type  = WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<static_cast<WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t>(UINT32_C(256)), std::uint32_t, AllocatorType>;
+    using distribution_type  = WIDE_INTEGER_NAMESPACE::math::wide_integer::uniform_int_distribution<wide_integer_type::my_width2, typename wide_integer_type::limb_type>;
+    #else
+    using wide_integer_type  = math::wide_integer::uintwide_t<static_cast<math::wide_integer::size_t>(UINT32_C(256)), std::uint32_t, AllocatorType>;
     using distribution_type  = math::wide_integer::uniform_int_distribution<wide_integer_type::my_width2, typename wide_integer_type::limb_type>;
+    #endif
 
     // Generate a random number with wide_integer_type having limbs of type LimbType.
-    random_engine_type generator;
+    // Purosely use the default seed.
+    random_engine_type generator; // NOLINT(cert-msc32-c,cert-msc51-cpp)
 
     distribution_type distribution;
 
@@ -47,13 +54,17 @@ namespace
 
     return result_is_ok;
   }
-}
+} // namespace local_random
 
-bool math::wide_integer::example007_random_generator()
+#if defined(WIDE_INTEGER_NAMESPACE)
+auto WIDE_INTEGER_NAMESPACE::math::wide_integer::example007_random_generator() -> bool
+#else
+auto math::wide_integer::example007_random_generator() -> bool
+#endif
 {
-  const bool result_08_is_ok = generate<std::uint8_t> ();
-  const bool result_16_is_ok = generate<std::uint16_t>();
-  const bool result_32_is_ok = generate<std::uint32_t>();
+  const bool result_08_is_ok = local_random::generate<std::uint8_t> ();
+  const bool result_16_is_ok = local_random::generate<std::uint16_t>();
+  const bool result_32_is_ok = local_random::generate<std::uint32_t>();
 
   const bool result_is_ok = (   result_08_is_ok
                              && result_16_is_ok
@@ -70,7 +81,11 @@ bool math::wide_integer::example007_random_generator()
 
 int main()
 {
+  #if defined(WIDE_INTEGER_NAMESPACE)
+  const bool result_is_ok = WIDE_INTEGER_NAMESPACE::wide_integer::example007_random_generator();
+  #else
   const bool result_is_ok = wide_integer::example007_random_generator();
+  #endif
 
   std::cout << "result_is_ok: " << std::boolalpha << result_is_ok << std::endl;
 }

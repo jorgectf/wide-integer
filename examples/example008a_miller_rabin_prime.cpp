@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2018 - 2021.                 //
+//  Copyright Christopher Kormanyos 2018 - 2022.                 //
 //  Distributed under the Boost Software License,                //
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt          //
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)             //
@@ -29,13 +29,26 @@
 
 #include <boost/multiprecision/miller_rabin.hpp>
 #include <boost/multiprecision/uintwide_t_backend.hpp>
+#include <boost/random/independent_bits.hpp>
+#include <boost/random/mersenne_twister.hpp>
 
 #include <examples/example_uintwide_t.h>
 
-bool math::wide_integer::example008a_miller_rabin_prime()
+#if defined(WIDE_INTEGER_NAMESPACE)
+auto WIDE_INTEGER_NAMESPACE::math::wide_integer::example008a_miller_rabin_prime() -> bool
+#else
+auto math::wide_integer::example008a_miller_rabin_prime() -> bool
+#endif
 {
-  using wide_integer_type = boost::multiprecision::number<boost::multiprecision::uintwide_t_backend<512U>,
-                                                          boost::multiprecision::et_off>;
+  #if defined(WIDE_INTEGER_NAMESPACE)
+  using wide_integer_type =
+    boost::multiprecision::number<boost::multiprecision::uintwide_t_backend<static_cast<WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t>(UINT32_C(512))>,
+                                  boost::multiprecision::et_off>;
+  #else
+  using wide_integer_type =
+    boost::multiprecision::number<boost::multiprecision::uintwide_t_backend<static_cast<math::wide_integer::size_t>(UINT32_C(512))>,
+                                  boost::multiprecision::et_off>;
+  #endif
 
   boost::random::mt11213b base_gen(static_cast<typename boost::random::mt11213b::result_type>(std::clock()));
 
@@ -94,7 +107,11 @@ bool math::wide_integer::example008a_miller_rabin_prime()
 
 int main()
 {
+  #if defined(WIDE_INTEGER_NAMESPACE)
+  const bool result_is_ok = WIDE_INTEGER_NAMESPACE::wide_integer::example008a_miller_rabin_prime();
+  #else
   const bool result_is_ok = wide_integer::example008a_miller_rabin_prime();
+  #endif
 
   std::cout << "result_is_ok: " << std::boolalpha << result_is_ok << std::endl;
 }

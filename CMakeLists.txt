@@ -14,7 +14,7 @@ add_library(WideInteger INTERFACE)
 target_compile_features(WideInteger INTERFACE cxx_std_11)
 
 target_include_directories(
-  WideInteger INTERFACE
+  WideInteger SYSTEM INTERFACE
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include>)
 
@@ -22,9 +22,6 @@ install(TARGETS WideInteger EXPORT WideIntegerTargets)
 install(
   FILES math/wide_integer/uintwide_t.h
   DESTINATION include/math/wide_integer/)
-install(
-  FILES util/utility/util_dynamic_array.h
-  DESTINATION include/util/utility/)
 install(EXPORT WideIntegerTargets
   FILE WideIntegerConfig.cmake
   NAMESPACE WideInteger::

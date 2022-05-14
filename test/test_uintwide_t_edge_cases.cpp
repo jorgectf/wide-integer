@@ -1,5 +1,5 @@
-///////////////////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2019 - 2021.
+﻿///////////////////////////////////////////////////////////////////////////////
+//  Copyright Christopher Kormanyos 2019 - 2022.
 //  Distributed under the Boost Software License,
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -7,6 +7,17 @@
 
 #include <string>
 
+#include <boost/version.hpp>
+
+#if !defined(BOOST_VERSION)
+#error BOOST_VERSION is not defined. Ensure that <boost/version.hpp> is properly included.
+#endif
+
+#if ((BOOST_VERSION >= 107900) && !defined(BOOST_MP_STANDALONE))
+#define BOOST_MP_STANDALONE
+#endif
+
+#if (BOOST_VERSION < 108000)
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
@@ -15,38 +26,53 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
+#endif
 
-#if defined(__clang__) && !defined(__APPLE__)
+#if (BOOST_VERSION < 108000)
+#if (defined(__clang__) && (__clang_major__ > 9)) && !defined(__APPLE__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #endif
+#endif
 
-#include <boost/lexical_cast.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/multiprecision/uintwide_t_backend.hpp>
 
 #include <math/wide_integer/uintwide_t.h>
-#include <math/wide_integer/uintwide_t_test.h>
+#include <test/test_uintwide_t.h>
 
-namespace
+namespace local_edge_cases
 {
   constexpr std::size_t local_digits2 = 16384U;
-}
+} // namespace local_edge_cases
 
-using local_uint_type =
-  boost::multiprecision::number<boost::multiprecision::uintwide_t_backend<local_digits2>,
-                                boost::multiprecision::et_off>;
+using local_uint_backend_type =
+  boost::multiprecision::uintwide_t_backend<local_edge_cases::local_digits2,
+                                            std::uint32_t,
+                                            std::allocator<std::uint32_t>>;
+
+using boost_uint_backend_allocator_type = void;
 
 using boost_uint_backend_type =
-  boost::multiprecision::cpp_int_backend<local_digits2,
-                                         local_digits2,
-                                         boost::multiprecision::unsigned_magnitude>;
+  boost::multiprecision::cpp_int_backend<local_edge_cases::local_digits2,
+                                         local_edge_cases::local_digits2,
+                                         boost::multiprecision::unsigned_magnitude,
+                                         boost::multiprecision::unchecked,
+                                         boost_uint_backend_allocator_type>;
+
+using local_uint_type =
+  boost::multiprecision::number<local_uint_backend_type,
+                                boost::multiprecision::et_off>;
 
 using boost_uint_type =
   boost::multiprecision::number<boost_uint_backend_type,
                                 boost::multiprecision::et_off>;
 
-bool math::wide_integer::test_uintwide_t_edge_cases()
+#if defined(WIDE_INTEGER_NAMESPACE)
+auto WIDE_INTEGER_NAMESPACE::math::wide_integer::test_uintwide_t_edge_cases() -> bool
+#else
+auto math::wide_integer::test_uintwide_t_edge_cases() -> bool
+#endif
 {
   const local_uint_type u_max_local = (std::numeric_limits<local_uint_type>::max)();
   const boost_uint_type u_max_boost = (std::numeric_limits<boost_uint_type>::max)();
@@ -65,7 +91,7 @@ bool math::wide_integer::test_uintwide_t_edge_cases()
   const bool result02_is_ok = ((result_local == 2U) && (result_boost == 2U));
 
   const std::string str_seven_and_effs =
-    "0x7" + std::string(std::string::size_type((local_digits2 / 4) - 1U), char('F'));
+    "0x7" + std::string(std::string::size_type((local_edge_cases::local_digits2 / 4) - 1U), 'F');
 
   const local_uint_type u_seven_and_effs_local(str_seven_and_effs.c_str());
   const boost_uint_type u_seven_and_effs_boost(str_seven_and_effs.c_str());
@@ -77,8 +103,8 @@ bool math::wide_integer::test_uintwide_t_edge_cases()
 
   const std::string str_three_quarter_effs_and_zeros =
       "0x"
-    + std::string(std::string::size_type((local_digits2 / 4) * 3U), char('F'))
-    + std::string(std::string::size_type((local_digits2 / 4) * 1U), char('0'))
+    + std::string(std::string::size_type((local_edge_cases::local_digits2 / 4) * 3U), 'F')
+    + std::string(std::string::size_type((local_edge_cases::local_digits2 / 4) * 1U), '0')
     ;
 
   const local_uint_type u_three_quarter_effs_and_zeros_local(str_three_quarter_effs_and_zeros.c_str());
@@ -91,8 +117,8 @@ bool math::wide_integer::test_uintwide_t_edge_cases()
 
   const std::string str_one_quarter_effs_and_zeros =
       "0x"
-    + std::string(std::string::size_type((local_digits2 / 4) * 1U), char('F'))
-    + std::string(std::string::size_type((local_digits2 / 4) * 3U), char('0'))
+    + std::string(std::string::size_type((local_edge_cases::local_digits2 / 4) * 1U), 'F')
+    + std::string(std::string::size_type((local_edge_cases::local_digits2 / 4) * 3U), '0')
     ;
 
   const local_uint_type u_one_quarter_effs_and_zeros_local(str_one_quarter_effs_and_zeros.c_str());
@@ -129,7 +155,7 @@ bool math::wide_integer::test_uintwide_t_edge_cases()
 
   const bool result08_is_ok = (result_local.convert_to<std::string>() == result_boost.convert_to<std::string>());
 
-  const bool result_is_ok = (   result01_is_ok
+  const auto result_is_ok = (   result01_is_ok
                              && result02_is_ok
                              && result03_is_ok
                              && result04_is_ok
@@ -141,12 +167,16 @@ bool math::wide_integer::test_uintwide_t_edge_cases()
   return result_is_ok;
 }
 
-#if defined(__clang__) && !defined(__APPLE__)
+#if (BOOST_VERSION < 108000)
+#if (defined(__clang__) && (__clang_major__ > 9)) && !defined(__APPLE__)
 #pragma GCC diagnostic pop
 #endif
+#endif
 
+#if (BOOST_VERSION < 108000)
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
+#endif
 #endif

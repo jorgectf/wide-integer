@@ -1,6 +1,13 @@
-Wide-integer
-[![Build Status](https://github.com/ckormanyos/wide-integer/actions/workflows/wide_integer.yml/badge.svg)](https://github.com/ckormanyos/wide-integer/actions)
+﻿Wide-integer
 ==================
+
+[![Build Status](https://github.com/ckormanyos/wide-integer/actions/workflows/wide_integer.yml/badge.svg)](https://github.com/ckormanyos/wide-integer/actions)
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/ckormanyos/wide-integer.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ckormanyos/wide-integer/context:cpp)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/ckormanyos/wide-integer.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ckormanyos/wide-integer/alerts/)
+[![Coverity Scan](https://scan.coverity.com/projects/24742/badge.svg)](https://scan.coverity.com/projects/ckormanyos-wide-integer)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ckormanyos_wide-integer&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ckormanyos_wide-integer)
+[![Boost Software License 1.0](https://img.shields.io/badge/license-BSL%201.0-blue.svg)](https://github.com/ckormanyos/wide-integer/blob/master/LICENSE_1_0.txt)
+[![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/ckormanyos/wide-integer)](https://github.com/ckormanyos/wide-integer)
 
 Wide-integer implements a generic C++ template for extended width
 unsigned and signed integral types.
@@ -21,13 +28,19 @@ In addition, small integer types such as software-synthesized versions of
 `uint24_t`, `uint48_t`, `uint64_t`, `uint96_t`, `uint128_t`, etc.
 (or signed counterparts of these) can also be created with wide-integer.
 
+We also emphasize here that less-common types (i.e., those less common than, say,
+`uint128_t`, `uint256_t`, `uint512_t`, etc.) can also be synthesized.
+Types such as `uint80_t` made from five 16-bit limbs,
+or `uint96_t` composed of three 32-bit limbs, or
+other similar types can be readily synthesized with wide-integer.
+
 Wide-integer also features basic realizations of several
 elementary and number theoretical functions such as root finding,
 random distribution, Miller-Rabin primality testing,
 greatest common denominator (GCD) and more.
 
-Inclusion of a single C++11 header file (plus one additional
-utility header file) is all that is needed for using wide-integer,
+Inclusion of a single C++11 header file
+is all that is needed for using wide-integer,
 as shown in the [examples](./examples).
 
 ## Implementation goals
@@ -42,6 +55,13 @@ as shown in the [examples](./examples).
 
 ## Quick start
 
+When working in your own project with wide-integer,
+using the [`uintwide_t.h` header](./math/wide_integer/uintwide_t.h)
+is straightforward. Identify the header within
+its directory. Include this header path to the compiler's set
+of include paths or in your project.
+Then simply `#include <uintwide_t.h>` the normal C++ way.
+
 Easy application follows via traditional C-style typedef or C++11 alias
 such as `uint512_t`. An instance of the defined type can be used very much
 like a built-in integral type. In the following code, for example,
@@ -49,7 +69,7 @@ the static `uint512_t` variable `x` is initialized with unsigned value `3U`.
 
 In particular,
 
-```C
+```cpp
 #include <math/wide_integer/uintwide_t.h>
 
 using uint512_t = math::wide_integer::uintwide_t<512U, std::uint32_t>;
@@ -67,7 +87,7 @@ the default limb type is 32 bits in width and unsigned.
 
 The complete template signature of the `uintwide_t` class is shown below.
 
-```C
+```cpp
 namespace math { namespace wide_integer {
 
 namespace detail { using size_t = std::uint32_t; }
@@ -124,6 +144,7 @@ on how to use wide-integer.
   - ![`example003a_cbrt`](./examples/example003a_cbrt.cpp) computes a cube root.
   - ![`example004_rootk_pow.cpp`](./examples/example004_rootk_pow.cpp) computes an integral seventh root and its corresponding power. A negative-valued cube root is also tested.
   - ![`example005_powm.cpp`](./examples/example005_powm.cpp) tests the power-modulus function `powm`.
+  - ![`example005a_pow_factors_of_p99.cpp`](./examples/example005a_pow_factors_of_p99.cpp) verifies a beautiful, known prime factorization result from a classic tabulated value.
   - ![`example006_gcd.cpp`](./examples/example006_gcd.cpp) tests the computation of a greatest common divisor `gcd`.
   - ![`example007_random_generator.cpp`](./examples/example007_random_generator.cpp) computes some large pseudo-random integers.
   - ![`example008_miller_rabin_prime.cpp`](./examples/example008_miller_rabin_prime.cpp) implements primality testing via Miller-Rabin.
@@ -133,21 +154,15 @@ on how to use wide-integer.
   - ![`example009b_timed_mul_8_by_8.cpp`](./examples/example009b_timed_mul_8_by_8.cpp) measures, yet again, multiplication timings for the special case of wide integers having 8 limbs.
   - ![`example010_uint48_t.cpp`](./examples/example010_uint48_t.cpp) verifies 48-bit integer caluclations.
   - ![`example011_uint24_t.cpp`](./examples/example011_uint24_t.cpp) performs calculations with 24-bits, which is definitely on the small side of the range of wide-integer.
+  - ![`example012_rsa_crypto.cpp`](./examples/example012_rsa_crypto.cpp) performs cryptographic calculations with 2048-bits, exploring a standardized test case.
 
 ## Building, testing and CI
 
 ### Build Status
-[![Build Status](https://github.com/ckormanyos/wide-integer/actions/workflows/wide_integer.yml/badge.svg)](https://github.com/ckormanyos/wide-integer/actions)
 
 The recent status of building and executing the tests and examples
 in Continuous Integration (CI) is always shown in the Build Status banner.
-
-When working in your own project with wide-integer,
-using the [`uintwide_t.h` header](./math/wide_integer/uintwide_t.h)
-is straightforward. Identify the header within
-its directory. Include this header path to the compiler's set
-of include paths or in your project.
-Then simply `#include <uintwide_t.h>` the normal C++ way.
+Additional banners from other syntax checks and builds may also be visible.
 
 It is also possible, if desired, to build and execute
 the tests and examples using various different OS/compiler
@@ -157,7 +172,8 @@ combinations.
 
 Building and running the tests and examples can be accomplished
 using the Microsoft VisualStudio solution workspace provided
-in `wide_integer.sln` located in the project's root directory.
+in `wide_integer.sln`. The MSVC solution file
+is located in the project's root directory.
 
 ### Build with CMake
 
@@ -177,11 +193,12 @@ can be executed with a simple, but rather lengthy, command line
 entered manually from the command shell.
 Consider, for instance, building in Linux with GCC in the presence of `unsigned` `__int128`.
 Furthermore, the Boost.Multiprecision library is used for some examples and tests.
-In this build example, Boost intended to be located
+In this build example, Boost is intended to be located
 in the made-up directory `../boost-root`,
 which needs to be adapted according to the actual location of Boost.
-The command line below illustrates how to build all wide_integer
-tests and examples directly from the *nix command line.
+The command line below illustrates how to build all
+of the wide_integer tests and examples directly
+from the *nix command line.
 
 ```sh
 cd wide_integer
@@ -206,6 +223,7 @@ test/test_uintwide_t_boost_backend.cpp      \
 test/test_uintwide_t_edge_cases.cpp         \
 test/test_uintwide_t_examples.cpp           \
 test/test_uintwide_t_float_convert.cpp      \
+test/test_uintwide_t_int_convert.cpp        \
 test/test_uintwide_t_n_base.cpp             \
 test/test_uintwide_t_n_binary_ops_base.cpp  \
 test/test_uintwide_t_spot_values.cpp        \
@@ -214,10 +232,11 @@ examples/example000a_builtin_convert.cpp    \
 examples/example001_mul_div.cpp             \
 examples/example001a_div_mod.cpp            \
 examples/example002_shl_shr.cpp             \
-examples/example003a_cbrt.cpp               \
 examples/example003_sqrt.cpp                \
+examples/example003a_cbrt.cpp               \
 examples/example004_rootk_pow.cpp           \
 examples/example005_powm.cpp                \
+examples/example005a_pow_factors_of_p99     \
 examples/example006_gcd.cpp                 \
 examples/example007_random_generator.cpp    \
 examples/example008_miller_rabin_prime.cpp  \
@@ -227,17 +246,18 @@ examples/example009a_timed_mul_4_by_4.cpp   \
 examples/example009b_timed_mul_8_by_8.cpp   \
 examples/example010_uint48_t.cpp            \
 examples/example011_uint24_t.cpp            \
+examples/example012_rsa_crypto.cpp          \
 -o wide_integer.exe
 ```
 
 ### Testing
 
-Testing is definitely a big issue. A growing test suite in
-continuous support improves conficence in the library,
-providing for tested, efficient functionality on the PC and workstation.
+Testing is definitely a big issue. A growing, supported
+test suite improves confidence in the library.
+It provides for tested, efficient functionality on the PC and workstation.
 The GitHub code is, as mentioned above, delivered with an affiliated MSVC
 project or a variety of other build/make options that use easy-to-understand
-subroutines called from `main()` to exercise the various
+subroutines called from `main()`. These exercise the various
 examples and the full suite of test cases.
 
 CI runs on push and pull request using GitHub Actions.
@@ -271,17 +291,20 @@ programming environments.
 Various configuration features can optionally be
 enabled or disabled at compile time with the compiler switches:
 
-```C
+```cpp
 #define WIDE_INTEGER_DISABLE_IOSTREAM
 #define WIDE_INTEGER_DISABLE_FLOAT_INTEROP
+#define WIDE_INTEGER_DISABLE_IMPLEMENT_UTIL_DYNAMIC_ARRAY
 #define WIDE_INTEGER_HAS_LIMB_TYPE_UINT64
 #define WIDE_INTEGER_HAS_MUL_8_BY_8_UNROLL
+#define WIDE_INTEGER_DISABLE_TRIVIAL_COPY_AND_STD_LAYOUT_CHECKS
+#define WIDE_INTEGER_NAMESPACE
 ```
 
 When working with even the most tiny microcontroller systems,
 I/O streaming can optionally be disabled with the compiler switch:
 
-```C
+```cpp
 #define WIDE_INTEGER_DISABLE_IOSTREAM
 ```
 
@@ -293,7 +316,7 @@ such as construct-from, cast-to, binary arithmetic with
 built-in floating-point types can be
 optionally disabled by defining:
 
-```C
+```cpp
 #define WIDE_INTEGER_DISABLE_FLOAT_INTEROP
 ```
 
@@ -302,20 +325,38 @@ and all available functions implementing construction-from,
 cast-to, binary arithmetic with built-in floating-point types
 are enabled.
 
+```cpp
+#define WIDE_INTEGER_DISABLE_IMPLEMENT_UTIL_DYNAMIC_ARRAY
+```
+
+This macro disables `uintwide_t.h`'s own local implementation
+of the `util::dynamic_array` template class.
+The logic of this macro is negated. Its default setting
+(of being disabled itself) ensures that standalone `uintwide_t.h`
+is free from any additional header dependencies.
+
+The template utility class `util::dynamic_array` is used
+as a storage container for certain instantiations of `uintwide_t`.
+This macro is disabled by default and `uintwide_t.h`
+does actually provide its own local implementation
+of the `util::dynamic_array` template class.
+Otherwise, the header file `<util/utility/util_dynamic_array.h>`
+must be found in the include path.
+
 When working on high-performance systems having `unsigned __int128`
 (an extended-width, yet non-standard data type),
 a 64-bit limb of type `uint64_t` can be used.
 Enable the 64-bit limb type on such systems
 with the compiler switch:
 
-```C
+```cpp
 #define WIDE_INTEGER_HAS_LIMB_TYPE_UINT64
 ```
 
 or (when using GCC, clang or similar) on the compiler
 command line with:
 
-```C
+```cpp
 -DWIDE_INTEGER_HAS_LIMB_TYPE_UINT64
 ```
 
@@ -324,7 +365,7 @@ This macro is disabled by default.
 The example below, for instance, uses a 64-bit limb type
 on GCC or clang.
 
-```C
+```cpp
 #define WIDE_INTEGER_HAS_LIMB_TYPE_UINT64
 
 #include <math/wide_integer/uintwide_t.h>
@@ -336,7 +377,7 @@ static uint_fast256_t x = 42U;
 
 Another potential optimization macro can be activated with:
 
-```C
+```cpp
 #define WIDE_INTEGER_HAS_MUL_8_BY_8_UNROLL
 ```
 
@@ -345,6 +386,58 @@ by manually unrolling the multiplication loop(s) for
 `uintwide_t` instances having 8 limbs. This macro is disabled
 by default.
 
+```cpp
+#define WIDE_INTEGER_DISABLE_TRIVIAL_COPY_AND_STD_LAYOUT_CHECKS
+```
+
+This macro disables compile-time checks for `std::is_trivially_copyable`
+and `std::is_standard_layout`. These checks provide assurance
+(among other attributes) that `uintwide_t`'s constructors
+satisfy rules needed for mixed-language C/C++ usage.
+Some older legacy target/compiler systems might have non-standard
+or incomplete STL implementations that lack these compile-time
+templates. For such compilers, it makes sense to deactivate
+these compile-time checks via activation of this macro.
+This macro is disabled by default and both the trivially-copyable
+as well as the standard-layout compile-time checks are active.
+
+```cpp
+#define WIDE_INTEGER_NAMESPACE
+```
+
+This is an advanced macro intended to be used in strict, exacting applications for which
+using the unqualified, global namespace `math` (i.e., `namespace` `::math`) is undesired or inacceptable.
+We recall that all parts of the wide-integer implementation,
+such as the `uintwide_t` class and its associated implementation
+details reside within `namespace` `::math::wide_integer`
+
+Defining the macro `WIDE_INTEGER_NAMESPACE` to be something like,
+for instance,
+
+```sh
+-DWIDE_INTEGER_NAMESPACE=something_unique
+```
+
+places all parts of the wide-integer implementation and its details
+within the prepended outer namespace `something_unique` ---
+as in
+
+```cpp
+namespace something_unique::math::wide_integer
+{
+  // ...
+}
+```
+
+When utilizing the `WIDE_INTEGER_NAMESPACE` option,
+vary the actual name or nesting depth of the desired prepended
+outer namespace if/as needed for your particular project.
+
+By default the macro `WIDE_INTEGER_NAMESPACE` is not defined.
+In this default state, `namespace` `::math::wide_integer` is used
+and the `uintwide_t` class and its associated implementation
+details reside therein.
+
 ## Detailed examples
 
 We will now present various straightforward detailed examples.
@@ -352,13 +445,13 @@ We will now present various straightforward detailed examples.
 The code below performs some elementary algebraic calculations
 with a 256-bit unsigned integral type.
 
-```C
+```cpp
 #include <iomanip>
 #include <iostream>
 
 #include <math/wide_integer/uintwide_t.h>
 
-int main()
+auto main() -> int
 {
   using uint256_t = math::wide_integer::uint256_t;
 
@@ -373,7 +466,7 @@ int main()
   const uint256_t d = (a / b);
 
   // Logical comparison.
-  const bool result_is_ok = (   (c == "0xE491A360C57EB4306C61F9A04F7F7D99BE3676AAD2D71C5592D5AE70F84AF076")
+  const auto result_is_ok = (   (c == "0xE491A360C57EB4306C61F9A04F7F7D99BE3676AAD2D71C5592D5AE70F84AF076")
                              && (d == "0xA"));
 
   // Print the hexadecimal representation string output.
@@ -395,13 +488,13 @@ and random number generation. These functions are be found via ADL.
 
 The example below calculates an integer square root.
 
-```C
+```cpp
 #include <iomanip>
 #include <iostream>
 
 #include <math/wide_integer/uintwide_t.h>
 
-int main()
+auto main() -> int
 {
   using uint256_t = math::wide_integer::uint256_t;
 
@@ -409,7 +502,7 @@ int main()
 
   const uint256_t s = sqrt(a);
 
-  const bool result_is_ok =
+  const auto result_is_ok =
     (s == "0xFA5FE7853F1D4AD92BDF244179CA178B");
 
   std::cout << "result_is_ok: " << std::boolalpha << result_is_ok << std::endl;
@@ -418,13 +511,13 @@ int main()
 
 The following sample performs add, subtract, multiply and divide of `uint48_t`.
 
-```C
+```cpp
 #include <iomanip>
 #include <iostream>
 
 #include <math/wide_integer/uintwide_t.h>
 
-int main()
+auto main() -> int
 {
   using uint48_t = math::wide_integer::uintwide_t<48U, std::uint8_t>;
 
@@ -446,7 +539,7 @@ int main()
   const uint48_t c_mul = (a * b);
   const uint48_t c_div = (a / b);
 
-  const bool result_is_ok = (   (c_add == ((a64 + b64) & UINT64_C(0x0000FFFFFFFFFFFF)))
+  const auto result_is_ok = (   (c_add == ((a64 + b64) & UINT64_C(0x0000FFFFFFFFFFFF)))
                              && (c_sub == ((a64 - b64) & UINT64_C(0x0000FFFFFFFFFFFF)))
                              && (c_mul == ((a64 * b64) & UINT64_C(0x0000FFFFFFFFFFFF)))
                              && (c_div == ((a64 / b64) & UINT64_C(0x0000FFFFFFFFFFFF))));
@@ -465,28 +558,20 @@ it is large enough to hold the value of
 <img src="https://render.githubusercontent.com/render/math?math=10^{3,333}">
 prior to (and following) the cube root operation.
 
-```C
+```cpp
 #include <iomanip>
 #include <iostream>
 
 #include <math/wide_integer/uintwide_t.h>
 
-int main()
+auto main() -> int
 {
   using uint11264_t = math::wide_integer::uintwide_t<11264U, std::uint32_t>;
 
   // Create the string '1' + 3,333 times '0', which is
   // equivalent to the decimal integral value 10^3333.
-  std::array<char, 3335U> str_a;
 
-  std::fill(str_a.begin() + 1U,
-            str_a.begin() + 1U + 3333U,
-            '0');
-
-  str_a.front() = '1';
-  str_a.back()  = '\0';
-
-  std::array<char, 1113U> str_control;
+  const std::string str_a = "1" + std::string(3333U, '0');
 
   const uint11264_t a = str_a.data();
 
@@ -495,14 +580,10 @@ int main()
   // Create the string '1' + 1,111 times '0', which is
   // equivalent to the decimal integral value 10^1111.
   // (This is the cube root of 10^3333.)
-  std::fill(str_control.begin() + 1U,
-            str_control.begin() + 1U + 1111U,
-            '0');
 
-  str_control.front() = '1';
-  str_control.back()  = '\0';
+  const std::string str_control = "1" + std::string(1111U, '0');
 
-  const bool result_is_ok = (s == str_control.data());
+  const auto result_is_ok = (s == uint11264_t(str_control.data()));
 
   std::cout << "result_is_ok: " << std::boolalpha << result_is_ok << std::endl;
 }
@@ -518,7 +599,7 @@ The following code, for instance, shows compile-time instantiations
 of `uintwide_t` from character strings with subsequent `constexpr` evaluations
 of binary operations multiply, divide, intergal cast and comparison.
 
-```C
+```cpp
 #include <math/wide_integer/uintwide_t.h>
 
 // Use a C++20 compiler for this example.
@@ -538,7 +619,7 @@ constexpr bool result_is_ok = (   (c == "0xE491A360C57EB4306C61F9A04F7F7D99BE367
                                && (std::uint_fast8_t(d) == 10U));
 
 // constexpr verification.
-static_assert(result_is_ok == true, "Error: example is not OK!");
+static_assert(result_is_ok, "Error: example is not OK!");
 ```
 
 `constexpr`-_ness_ of `uintwide_t` has been checked on GCC 10, GCC 11, clang 10
@@ -556,7 +637,7 @@ availability is unknown, the preprocessor symbols below can be useful.
 These symbols are defined or set directly within the header(s)
 of the wide_integer library.
 
-```C
+```cpp
 WIDE_INTEGER_CONSTEXPR
 WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST
 ```
@@ -585,7 +666,7 @@ signed-_ness_ (or unsigned-_ness_) of `uintwide_t`.
 The code below, for instance, uses an aliased version of
 signed `int256_t`.
 
-```C
+```cpp
 #include <math/wide_integer/uintwide_t.h>
 
 using int256_t = math::wide_integer::uintwide_t<256U, std::uint32_t, void, true>;
@@ -610,3 +691,14 @@ negative arguments in number theoretical functions.
   - Miller-Rabin primality testing treats negative inetegers as positive when testing for prime, thus extending the set of primes <img src="https://render.githubusercontent.com/render/math?math=p\,\in\,\mathbb{Z}">.
   - MSB/LSB (most/least significant bit) do not differentiate between positive or negative argument such that MSB of a negative integer will be the highest bit of the corresponding unsigned type.
   - Printing both positive-valued and negative-valued signed integers in hexadecimal format is supported. When printing negative-valued, signed  `uintwide_t` in hexadecimal format, the sign bit and all other bits are treated as if the integer were unsigned. The negative sign is not explicitly shown when using hexadecimal format, even if the underlying integer is signed and negative-valued. A potential positive sign, however, will be shown for positive-valued signed integers in hexadecimal form in the presence of `std::showpos`.
+
+### Notable construction/conversion rules
+
+The following notable construction/conversion rules have been implemented
+in the wide-integer project.
+
+  - Constructions-from built-in types are implicit. These are considered widening conversions.
+  - Casts to built-in types are explicit and considered narrowing, regardless of the widths of left-and-right hand sides of the conversion.
+  - All of both constructions-from as well as casts-to wider/less-wide and signed/unsigned wide-integer types are implicit (even if the conversion at hand is narrowing via having fewer bits). Casts such as `int128_t` to/from `uint160_t` and similar, for instance, are implicit.
+  - All wide-integer-types are move constructible.
+  - All wide-integer types having the same widths and having the same limb-type (but possibly different sign) are move-assignable and `std::move()`-capable.

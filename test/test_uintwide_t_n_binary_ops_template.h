@@ -1,12 +1,12 @@
-///////////////////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2019 - 2021.
+﻿///////////////////////////////////////////////////////////////////////////////
+//  Copyright Christopher Kormanyos 2019 - 2022.
 //  Distributed under the Boost Software License,
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef TEST_UINTWIDE_T_N_BINARY_OPS_TEMPLATE_2019_12_19_H_
-  #define TEST_UINTWIDE_T_N_BINARY_OPS_TEMPLATE_2019_12_19_H_
+#ifndef TEST_UINTWIDE_T_N_BINARY_OPS_TEMPLATE_2019_12_19_H // NOLINT(llvm-header-guard)
+  #define TEST_UINTWIDE_T_N_BINARY_OPS_TEMPLATE_2019_12_19_H
 
   #include <algorithm>
   #include <atomic>
@@ -16,38 +16,60 @@
 
   #include <test/test_uintwide_t_n_binary_ops_base.h>
 
+  #if defined(WIDE_INTEGER_NAMESPACE)
+  template<const WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t MyDigits2,
+           typename MyLimbType = std::uint32_t,
+           typename AllocatorType = void>
+  #else
   template<const math::wide_integer::size_t MyDigits2,
            typename MyLimbType = std::uint32_t,
            typename AllocatorType = void>
-  class test_uintwide_t_n_binary_ops_template : public test_uintwide_t_n_binary_ops_base
+  #endif
+  class test_uintwide_t_n_binary_ops_template : public test_uintwide_t_n_binary_ops_base // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
   {
   private:
-    static constexpr math::wide_integer::size_t digits2 = MyDigits2;
+    #if defined(WIDE_INTEGER_NAMESPACE)
+    static constexpr auto digits2 = static_cast<WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t>(MyDigits2);
+    #else
+    static constexpr auto digits2 = static_cast<math::wide_integer::size_t>(MyDigits2);
+    #endif
+
+    using boost_uint_backend_allocator_type = void;
 
     using boost_uint_backend_type =
       boost::multiprecision::cpp_int_backend<digits2,
                                              digits2,
-                                             boost::multiprecision::unsigned_magnitude>;
+                                             boost::multiprecision::unsigned_magnitude,
+                                             boost::multiprecision::unchecked,
+                                             boost_uint_backend_allocator_type>;
 
     using boost_uint_type = boost::multiprecision::number<boost_uint_backend_type, boost::multiprecision::et_on>;
 
     using local_limb_type = MyLimbType;
 
+    #if defined(WIDE_INTEGER_NAMESPACE)
+    using local_uint_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<digits2, local_limb_type, AllocatorType>;
+    #else
     using local_uint_type = math::wide_integer::uintwide_t<digits2, local_limb_type, AllocatorType>;
+    #endif
 
   public:
-    test_uintwide_t_n_binary_ops_template(const std::size_t count)
+    explicit test_uintwide_t_n_binary_ops_template(const std::size_t count)
       : test_uintwide_t_n_binary_ops_base(count),
         a_local(),
         b_local(),
         a_boost(),
         b_boost() { }
 
-    virtual ~test_uintwide_t_n_binary_ops_template() = default;
+    ~test_uintwide_t_n_binary_ops_template() override = default;
 
-    virtual math::wide_integer::size_t get_digits2() const { return digits2; }
+    #if defined(WIDE_INTEGER_NAMESPACE)
+    WIDE_INTEGER_NODISCARD auto get_digits2() const -> WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t override { return digits2; }
+    #else
+    WIDE_INTEGER_NODISCARD auto get_digits2() const -> math::wide_integer::size_t override { return digits2; }
+    #endif
 
-    virtual void initialize()
+    void initialize() override
     {
       a_local.clear();
       b_local.clear();
@@ -65,7 +87,7 @@
       get_equal_random_test_values_boost_and_local_n<local_uint_type, boost_uint_type, AllocatorType>(b_local.data(), b_boost.data(), size());
     }
 
-    virtual bool test_binary_add() const
+    WIDE_INTEGER_NODISCARD auto test_binary_add() const -> bool override
     {
       bool result_is_ok = true;
 
@@ -73,7 +95,7 @@
 
       my_concurrency::parallel_for
       (
-        std::size_t(0U),
+        static_cast<std::size_t>(0U),
         size(),
         [&test_lock, &result_is_ok, this](std::size_t i)
         {
@@ -84,7 +106,7 @@
           const std::string str_local = hexlexical_cast(c_local);
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (str_boost == str_local);
+          result_is_ok = ((str_boost == str_local) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -92,7 +114,7 @@
       return result_is_ok;
     }
 
-    virtual bool test_binary_sub() const
+    WIDE_INTEGER_NODISCARD auto test_binary_sub() const -> bool override
     {
       bool result_is_ok = true;
 
@@ -100,7 +122,7 @@
 
       my_concurrency::parallel_for
       (
-        std::size_t(0U),
+        static_cast<std::size_t>(0U),
         size(),
         [&test_lock, &result_is_ok, this](std::size_t i)
         {
@@ -111,7 +133,7 @@
           const std::string str_local = hexlexical_cast(c_local);
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (str_boost == str_local);
+          result_is_ok = ((str_boost == str_local) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -119,7 +141,7 @@
       return result_is_ok;
     }
 
-    virtual bool test_binary_mul() const
+    WIDE_INTEGER_NODISCARD auto test_binary_mul() const -> bool override
     {
       bool result_is_ok = true;
 
@@ -127,7 +149,7 @@
 
       my_concurrency::parallel_for
       (
-        std::size_t(0U),
+        static_cast<std::size_t>(0U),
         size(),
         [&test_lock, &result_is_ok, this](std::size_t i)
         {
@@ -138,7 +160,7 @@
           const std::string str_local = hexlexical_cast(c_local);
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (str_boost == str_local);
+          result_is_ok = ((str_boost == str_local) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -146,23 +168,23 @@
       return result_is_ok;
     }
 
-    virtual bool test_binary_div() const
+    WIDE_INTEGER_NODISCARD auto test_binary_div() const -> bool override
     {
       std::atomic_flag test_lock = ATOMIC_FLAG_INIT;
 
-      my_gen.seed(static_cast<typename random_generator_type::result_type>(std::clock()));
+      my_gen().seed(static_cast<typename random_generator_type::result_type>(std::clock()));
       std::uniform_int_distribution<> dis(1, static_cast<int>(digits2 - 1U));
 
       bool result_is_ok = true;
 
       my_concurrency::parallel_for
       (
-        std::size_t(0U),
+        static_cast<std::size_t>(0U),
         size(),
         [&result_is_ok, this, &dis, &test_lock](std::size_t i)
         {
           while(test_lock.test_and_set()) { ; }
-          const std::size_t right_shift_amount = static_cast<std::size_t>(dis(my_gen));
+          const auto right_shift_amount = static_cast<std::size_t>(dis(my_gen()));
           test_lock.clear();
 
           const boost_uint_type c_boost = a_boost[i] / (std::max)(boost_uint_type(1U), boost_uint_type(b_boost[i] >> right_shift_amount));
@@ -172,7 +194,7 @@
           const std::string str_local = hexlexical_cast(c_local);
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (str_boost == str_local);
+          result_is_ok = ((str_boost == str_local) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -180,23 +202,23 @@
       return result_is_ok;
     }
 
-    virtual bool test_binary_mod() const
+    WIDE_INTEGER_NODISCARD auto test_binary_mod() const -> bool override
     {
       std::atomic_flag test_lock = ATOMIC_FLAG_INIT;
 
-      my_gen.seed(static_cast<typename random_generator_type::result_type>(std::clock()));
+      my_gen().seed(static_cast<typename random_generator_type::result_type>(std::clock()));
       std::uniform_int_distribution<> dis(1, static_cast<int>(digits2 - 1U));
 
       bool result_is_ok = true;
 
       my_concurrency::parallel_for
       (
-        std::size_t(0U),
+        static_cast<std::size_t>(0U),
         size(),
         [&result_is_ok, this, &dis, &test_lock](std::size_t i)
         {
           while(test_lock.test_and_set()) { ; }
-          const std::size_t right_shift_amount = static_cast<std::size_t>(dis(my_gen));
+          const auto right_shift_amount = static_cast<std::size_t>(dis(my_gen()));
           test_lock.clear();
 
           const boost_uint_type c_boost = a_boost[i] % (std::max)(boost_uint_type(1U), boost_uint_type(b_boost[i] >> right_shift_amount));
@@ -206,7 +228,7 @@
           const std::string str_local = hexlexical_cast(c_local);
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (str_boost == str_local);
+          result_is_ok = ((str_boost == str_local) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -214,7 +236,7 @@
       return result_is_ok;
     }
 
-    virtual bool test_binary_sqrt() const
+    WIDE_INTEGER_NODISCARD auto test_binary_sqrt() const -> bool override
     {
       bool result_is_ok = true;
 
@@ -222,7 +244,7 @@
 
       my_concurrency::parallel_for
       (
-        std::size_t(0U),
+        static_cast<std::size_t>(0U),
         size(),
         [&test_lock, &result_is_ok, this](std::size_t i)
         {
@@ -233,7 +255,7 @@
           const std::string str_local = hexlexical_cast(c_local);
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (str_boost == str_local);
+          result_is_ok = ((str_boost == str_local) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -242,11 +264,11 @@
     }
 
   private:
-    std::vector<local_uint_type> a_local;
-    std::vector<local_uint_type> b_local;
+    std::vector<local_uint_type> a_local; // NOLINT(readability-identifier-naming)
+    std::vector<local_uint_type> b_local; // NOLINT(readability-identifier-naming)
 
-    std::vector<boost_uint_type> a_boost;
-    std::vector<boost_uint_type> b_boost;
+    std::vector<boost_uint_type> a_boost; // NOLINT(readability-identifier-naming)
+    std::vector<boost_uint_type> b_boost; // NOLINT(readability-identifier-naming)
   };
 
-#endif // TEST_UINTWIDE_T_N_BINARY_OPS_TEMPLATE_2019_12_19_H_
+#endif // TEST_UINTWIDE_T_N_BINARY_OPS_TEMPLATE_2019_12_19_H

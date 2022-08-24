@@ -98,7 +98,7 @@ namespace local_rsa
 
       template<typename InputIterator,
                typename OutputIterator>
-      void encrypt(InputIterator in_first, const std::size_t count, OutputIterator out)
+      auto encrypt(InputIterator in_first, const std::size_t count, OutputIterator out) -> void
       {
         for(auto it = in_first; it != in_first + typename std::iterator_traits<InputIterator>::difference_type(count); ++it) // NOLINT(altera-id-dependent-backward-branch)
         {
@@ -117,7 +117,7 @@ namespace local_rsa
 
       template<typename InputIterator,
                typename OutputIterator>
-      void decrypt(InputIterator cry_in, const std::size_t count, OutputIterator cypher_out)
+      auto decrypt(InputIterator cry_in, const std::size_t count, OutputIterator cypher_out) -> void
       {
         InputIterator cry_end(cry_in + typename std::iterator_traits<InputIterator>::difference_type(count));
 
@@ -228,28 +228,25 @@ namespace local_rsa
     rsa_base() = delete;
 
   protected:
-    my_uintwide_t    my_p;        // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
-    my_uintwide_t    my_q;        // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
-    my_uintwide_t    my_r;        // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
-    my_uintwide_t    my_m;        // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
-    my_uintwide_t    phi_of_m;    // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
-    public_key_type  public_key;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
-    private_key_type private_key; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
+    my_uintwide_t    my_p;            // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
+    my_uintwide_t    my_q;            // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
+    my_uintwide_t    my_r;            // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
+    my_uintwide_t    my_m;            // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
+    my_uintwide_t    phi_of_m    { }; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
+    public_key_type  public_key  { }; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
+    private_key_type private_key { }; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
 
     rsa_base(my_uintwide_t p_in,
              my_uintwide_t q_in,
-             my_uintwide_t r_in) : my_p       (std::move(p_in)),
-                                   my_q       (std::move(q_in)),
-                                   my_r       (std::move(r_in)),
-                                   my_m       (my_p * my_q),
-                                   phi_of_m   (),
-                                   public_key (),
-                                   private_key()
+             my_uintwide_t r_in) : my_p(std::move(p_in)),
+                                   my_q(std::move(q_in)),
+                                   my_r(std::move(r_in)),
+                                   my_m(my_p * my_q)
     {
       public_key = public_key_type { my_r, my_m }; // NOLINT(cppcoreguidelines-prefer-member-initializer)
     }
 
-    void calculate_private_key()
+    auto calculate_private_key() -> void
     {
       my_uintwide_t a = phi_of_m;
       my_uintwide_t b = my_r;

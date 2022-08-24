@@ -25,6 +25,10 @@
 #define BOOST_MP_STANDALONE
 #endif
 
+#if ((BOOST_VERSION >= 108000) && !defined(BOOST_NO_EXCEPTIONS))
+#define BOOST_NO_EXCEPTIONS
+#endif
+
 #if (BOOST_VERSION < 108000)
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
@@ -34,6 +38,11 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
+#endif
+
+#if (defined(__GNUC__) && !defined(__clang__) && (__GNUC__ >= 12))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wrestrict"
 #endif
 
 #if (BOOST_VERSION < 108000)
@@ -144,12 +153,7 @@ auto math::wide_integer::example008a_miller_rabin_prime() -> bool
     }
   }
 
-  auto seed_next = std::clock();
-
-  while(seed_next == seed_start)
-  {
-    seed_next = std::clock();
-  }
+  const auto seed_next = std::clock();
 
   gen1.seed(static_cast<typename random_engine1_type::result_type>(seed_next));
 
@@ -202,6 +206,10 @@ auto main() -> int // NOLINT(bugprone-exception-escape)
 #if (defined(__clang__) && (__clang_major__ > 9)) && !defined(__APPLE__)
 #pragma GCC diagnostic pop
 #endif
+#endif
+
+#if (defined(__GNUC__) && !defined(__clang__) && (__GNUC__ >= 12))
+#pragma GCC diagnostic pop
 #endif
 
 #if (BOOST_VERSION < 108000)

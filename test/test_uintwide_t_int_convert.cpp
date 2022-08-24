@@ -21,6 +21,21 @@
 #define BOOST_MP_STANDALONE
 #endif
 
+#if ((BOOST_VERSION >= 108000) && !defined(BOOST_NO_EXCEPTIONS))
+#define BOOST_NO_EXCEPTIONS
+#endif
+
+#if (((BOOST_VERSION == 108000) || (BOOST_VERSION == 108100)) && defined(BOOST_NO_EXCEPTIONS))
+#if defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsometimes-uninitialized"
+#endif
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4701)
+#endif
+#endif
+
 #if (BOOST_VERSION < 108000)
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
@@ -30,6 +45,11 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
+#endif
+
+#if (defined(__GNUC__) && !defined(__clang__) && (__GNUC__ >= 12))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wrestrict"
 #endif
 
 #if (BOOST_VERSION < 108000)
@@ -165,7 +185,9 @@ auto math::wide_integer::test_uintwide_t_int_convert() -> bool
 
   bool result_is_ok = true;
 
-  for(auto i = static_cast<std::size_t>(UINT32_C(0)); i < static_cast<std::size_t>(UINT32_C(0x100000)); ++i)
+  for(auto   i = static_cast<std::size_t>(UINT32_C(0));
+             i < static_cast<std::size_t>(UINT32_C(0x100000));
+           ++i)
   {
     std::string str_digits;
 
@@ -191,10 +213,23 @@ auto math::wide_integer::test_uintwide_t_int_convert() -> bool
 #endif
 #endif
 
+#if (defined(__GNUC__) && !defined(__clang__) && (__GNUC__ >= 12))
+#pragma GCC diagnostic pop
+#endif
+
 #if (BOOST_VERSION < 108000)
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
+#endif
+#endif
+
+#if (((BOOST_VERSION == 108000) || (BOOST_VERSION == 108100)) && defined(BOOST_NO_EXCEPTIONS))
+#if defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+#if defined(_MSC_VER)
+#pragma warning(pop)
 #endif
 #endif

@@ -11,6 +11,92 @@
 #include <math/wide_integer/uintwide_t.h>
 #include <test/test_uintwide_t.h>
 
+namespace exercise_bad_string_input
+{
+  auto test_uintwide_t_spot_values_exercise_bad_string_input() -> bool
+  {
+    #if defined WIDE_INTEGER_NAMESPACE
+    using local_uint128_t = WIDE_INTEGER_NAMESPACE::math::wide_integer::uint128_t;
+    #else
+    using local_uint128_t = math::wide_integer::uint128_t;
+    #endif
+
+    WIDE_INTEGER_CONSTEXPR local_uint128_t u("bad-string-input");
+
+    const bool result_bad_string_input_is_ok = (u == (std::numeric_limits<local_uint128_t>::max)());
+
+    #if(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST == 1)
+    static_assert(u == (std::numeric_limits<local_uint128_t>::max)(), "Error: Reaction to bad string input is not OK");
+    #endif
+
+    return result_bad_string_input_is_ok;
+  }
+} // namespace exercise_bad_string_input
+
+namespace exercise_pow_zero_one_two
+{
+  auto test_uintwide_t_spot_values_exercise_pow_zero_one_two() -> bool
+  {
+    #if defined WIDE_INTEGER_NAMESPACE
+    using local_uint128_t = WIDE_INTEGER_NAMESPACE::math::wide_integer::uint128_t;
+    #else
+    using local_uint128_t = math::wide_integer::uint128_t;
+    #endif
+
+    WIDE_INTEGER_CONSTEXPR local_uint128_t u(UINT64_C(9999999978787878));
+
+    using std::pow;
+
+    WIDE_INTEGER_CONSTEXPR local_uint128_t u0 = pow(u, 0);
+    WIDE_INTEGER_CONSTEXPR local_uint128_t u1 = pow(u, 1);
+    WIDE_INTEGER_CONSTEXPR local_uint128_t u2 = pow(u, 2);
+
+    const bool result_pow_is_ok =
+      (
+           (u0 == 1)
+        && (u1 == u)
+        && (u2 == u * u)
+      );
+
+    #if(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST == 1)
+    static_assert(u0 == 1,     "Error: Power of zero is not OK");
+    static_assert(u1 == u,     "Error: Power of one  is not OK");
+    static_assert(u2 == u * u, "Error: Power of two  is not OK");
+    #endif
+
+    return result_pow_is_ok;
+  }
+} // namespace exercise_pow_zero_one_two
+
+namespace exercise_octal
+{
+  auto test_uintwide_t_spot_values_exercise_octal() -> bool
+  {
+    #if defined WIDE_INTEGER_NAMESPACE
+    using local_uint128_t = WIDE_INTEGER_NAMESPACE::math::wide_integer::uint128_t;
+    #else
+    using local_uint128_t = math::wide_integer::uint128_t;
+    #endif
+
+    WIDE_INTEGER_CONSTEXPR local_uint128_t u_dec("100000000000000000000777772222211111");
+    WIDE_INTEGER_CONSTEXPR local_uint128_t u_oct("0464114134543515404256122464446501262047");
+
+    auto result_conversion_is_ok = (u_dec == u_oct);
+
+    #if(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST == 1)
+    static_assert(u_dec == u_oct, "Error: Conversion decimal to octal is not OK");
+    #endif
+
+    std::stringstream strm;
+
+    strm << std::showbase << std::oct << u_oct;
+
+    result_conversion_is_ok = ((strm.str() == "0464114134543515404256122464446501262047") && result_conversion_is_ok);
+
+    return result_conversion_is_ok;
+  }
+} // namespace exercise_octal
+
 namespace from_issue_266
 {
   auto test_uintwide_t_spot_values_from_issue_266_inc() -> bool
@@ -138,7 +224,7 @@ namespace from_issue_145
 
     const auto a0(x);
 
-    #if defined(__clang__) && (defined(__clang_major__) && (__clang_major__ > 6))
+    #if (defined(__clang__) && (defined(__clang_major__) && (__clang_major__ > 6)))
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
     #endif
@@ -161,7 +247,7 @@ namespace from_issue_145
       local_result_is_ok = ((a == 1U) && local_result_is_ok);
     }
 
-    #if defined(__clang__) && (defined(__clang_major__) && (__clang_major__ > 6))
+    #if (defined(__clang__) && (defined(__clang_major__) && (__clang_major__ > 6)))
     #pragma GCC diagnostic pop
     #endif
 
@@ -205,6 +291,18 @@ namespace local_test_spot_values
 auto local_test_spot_values::test() -> bool // NOLINT(readability-function-cognitive-complexity)
 {
   bool result_is_ok = true;
+
+  {
+    result_is_ok = (exercise_bad_string_input::test_uintwide_t_spot_values_exercise_bad_string_input() && result_is_ok);
+  }
+
+  {
+    result_is_ok = (exercise_pow_zero_one_two::test_uintwide_t_spot_values_exercise_pow_zero_one_two() && result_is_ok);
+  }
+
+  {
+    result_is_ok = (exercise_octal::test_uintwide_t_spot_values_exercise_octal() && result_is_ok);
+  }
 
   {
     // See also: https://github.com/ckormanyos/wide-integer/issues/266
@@ -868,14 +966,25 @@ auto local_test_spot_values::test() -> bool // NOLINT(readability-function-cogni
     // 40641612127094559121321599356729737321
     const uint256_t b("0x1E934A2EEA60A2AD14ECCAE7AD82C069");
 
-    const uint256_t lm = lcm(a - 1U, b - 1U);
-    const uint256_t gd = gcd(a - 1U, b - 1U);
+    const auto v  = b - 1U;
+    const auto lm = lcm(a - 1U, v);
+    const auto gd = gcd(a - 1U, v);
 
     // LCM[16770224695321632575655872732632870897 - 1, 40641612127094559121321599356729737321 - 1]
     result_is_ok = ((lm == uint256_t("28398706972978513348490390087175345493497748446743697820448222113648043280")) && result_is_ok);
 
     // GCD[16770224695321632575655872732632870897 - 1, 40641612127094559121321599356729737321 - 1]
     result_is_ok = ((gd == 24U) && result_is_ok); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+
+    {
+      // Check GCD(0, v) to be equal to v (found mssing in code coverage analyses).
+
+      using local_limb_type = typename uint256_t::limb_type;
+
+      const auto gd0 = gcd(uint256_t(static_cast<local_limb_type>(UINT8_C(0))), v);
+
+      result_is_ok = ((gd0 == v) && result_is_ok);
+    }
   }
 
   {
@@ -1081,15 +1190,47 @@ auto local_test_spot_values::test() -> bool // NOLINT(readability-function-cogni
 
     WIDE_INTEGER_CONSTEXPR uint256_t c("0xE491A360C57EB4306C61F9A04F7F7D99BE3676AAD2D71C5592D5AE70F84AF076");
 
-    result_is_ok = (((a * b) == c) && result_is_ok);
+    WIDE_INTEGER_CONSTEXPR auto result_mul_is_ok = ((a * b) == c);
+
+    #if(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST == 1)
+    static_assert(result_mul_is_ok, "Error: Static check of spot value multiplication is not OK");
+    #endif
+
+    result_is_ok = (result_mul_is_ok && result_is_ok);
 
     WIDE_INTEGER_CONSTEXPR uint256_t q(10U); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
-    result_is_ok = (((a / b) == q) && result_is_ok);
+    WIDE_INTEGER_CONSTEXPR auto result_div_is_ok = ((a / b) == q);
+
+    #if(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST == 1)
+    static_assert(result_div_is_ok, "Error: Static check of spot value division is not OK");
+    #endif
+
+    result_is_ok = (result_div_is_ok && result_is_ok);
 
     WIDE_INTEGER_CONSTEXPR uint256_t m("0x14998D5CA3DB6385F7DEDF4621DE48A9104AC13797C6567713D7ABC216D7AB4C");
 
-    result_is_ok = (((a % b) == m) && result_is_ok);
+    WIDE_INTEGER_CONSTEXPR auto result_mod_is_ok = ((a % b) == m);
+
+    #if(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST == 1)
+    static_assert(result_mod_is_ok, "Error: Static check of spot value modulus is not OK");
+    #endif
+
+    result_is_ok = (result_mod_is_ok && result_is_ok);
+
+    {
+      // See also: https://github.com/ckormanyos/wide-integer/issues/274
+
+      WIDE_INTEGER_CONSTEXPR auto result_mod1_is_ok  = ((a % 1) == 0);
+      WIDE_INTEGER_CONSTEXPR auto result_mod7u_is_ok = ((a % 7U) == 3U); // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+
+      #if(WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST == 1)
+      static_assert(result_mod1_is_ok,  "Error: Static check of spot value modulus with 1 is not OK");
+      static_assert(result_mod7u_is_ok, "Error: Static check of spot value modulus with 7U is not OK");
+      #endif
+
+      result_is_ok = ((result_mod1_is_ok && result_mod7u_is_ok) && result_is_ok);
+    }
   }
 
   return result_is_ok;

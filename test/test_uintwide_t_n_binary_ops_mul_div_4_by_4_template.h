@@ -36,10 +36,10 @@
   class test_uintwide_t_n_binary_ops_mul_div_4_by_4_template // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
     <MyWidth2,
      MyLimbType,
-     typename std::enable_if<(   (std::numeric_limits<MyLimbType>::digits * 4 == MyWidth2)
-                              && (std::is_fundamental<MyLimbType>::value)
-                              && (std::is_integral   <MyLimbType>::value)
-                              && (std::is_unsigned   <MyLimbType>::value))>::type>
+     std::enable_if_t<(   (std::numeric_limits<MyLimbType>::digits * 4 == MyWidth2)
+                       && (std::is_fundamental<MyLimbType>::value)
+                       && (std::is_integral   <MyLimbType>::value)
+                       && (std::is_unsigned   <MyLimbType>::value))>>
     : public test_uintwide_t_n_binary_ops_base
   {
   private:
@@ -73,15 +73,11 @@
 
   public:
     explicit test_uintwide_t_n_binary_ops_mul_div_4_by_4_template(const std::size_t count)
-      : test_uintwide_t_n_binary_ops_base(count),
-        a_local(),
-        b_local(),
-        a_cntrl(),
-        b_cntrl() { }
+      : test_uintwide_t_n_binary_ops_base(count) { }
 
     ~test_uintwide_t_n_binary_ops_mul_div_4_by_4_template() override = default;
 
-    auto do_test(const std::size_t rounds) -> bool override
+    auto do_test(std::size_t rounds) -> bool override
     {
       bool result_is_ok = true;
 
@@ -91,16 +87,16 @@
         this->initialize();
 
         std::cout << "test_binary_mul()  native compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok = (this->test_binary_mul() && result_is_ok);
+        result_is_ok = (test_binary_mul() && result_is_ok);
 
         std::cout << "test_binary_div()  native compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok = (this->test_binary_div() && result_is_ok);
+        result_is_ok = (test_binary_div() && result_is_ok);
       }
 
       return result_is_ok;
     }
 
-    void initialize() override
+    auto initialize() -> void override
     {
       a_local.clear();
       b_local.clear();
@@ -118,7 +114,7 @@
       get_equal_random_test_values_cntrl_and_local_n(b_local.data(), b_cntrl.data(), size());
     }
 
-    WIDE_INTEGER_NODISCARD auto test_binary_mul() const -> bool override
+    WIDE_INTEGER_NODISCARD auto test_binary_mul() const -> bool
     {
       std::atomic_flag test_lock = ATOMIC_FLAG_INIT;
 
@@ -148,7 +144,7 @@
       return result_is_ok;
     }
 
-    WIDE_INTEGER_NODISCARD auto test_binary_div() const -> bool override
+    WIDE_INTEGER_NODISCARD auto test_binary_div() const -> bool
     {
       std::atomic_flag test_lock = ATOMIC_FLAG_INIT;
 
@@ -183,17 +179,17 @@
     }
 
   private:
-    std::vector<local_uint_ab_type> a_local; // NOLINT(readability-identifier-naming)
-    std::vector<local_uint_ab_type> b_local; // NOLINT(readability-identifier-naming)
+    std::vector<local_uint_ab_type> a_local { }; // NOLINT(readability-identifier-naming)
+    std::vector<local_uint_ab_type> b_local { }; // NOLINT(readability-identifier-naming)
 
-    std::vector<native_uint_cntrl_type> a_cntrl; // NOLINT(readability-identifier-naming)
-    std::vector<native_uint_cntrl_type> b_cntrl; // NOLINT(readability-identifier-naming)
+    std::vector<native_uint_cntrl_type> a_cntrl { }; // NOLINT(readability-identifier-naming)
+    std::vector<native_uint_cntrl_type> b_cntrl { }; // NOLINT(readability-identifier-naming)
 
     template<typename OtherLocalUintType,
              typename OtherCntrlUintType>
-    static void get_equal_random_test_values_cntrl_and_local_n(OtherLocalUintType* u_local,
-                                                               OtherCntrlUintType* u_cntrl,
-                                                               const std::size_t count)
+    static auto get_equal_random_test_values_cntrl_and_local_n(      OtherLocalUintType* u_local,
+                                                                     OtherCntrlUintType* u_cntrl,
+                                                               const std::size_t         count) -> void
     {
       using other_local_uint_type = OtherLocalUintType;
       using other_cntrl_uint_type = OtherCntrlUintType;

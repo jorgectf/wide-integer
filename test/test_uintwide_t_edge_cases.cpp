@@ -8,6 +8,7 @@
 #include <chrono>
 #include <random>
 #include <string>
+#include <vector>
 
 #include <boost/version.hpp>
 
@@ -34,14 +35,19 @@
 #endif
 #endif
 
-#if (BOOST_VERSION < 108000)
 #if defined(__GNUC__)
+#if (BOOST_VERSION < 108000)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 #endif
 
@@ -72,19 +78,26 @@ namespace local_edge_cases {
 
 } // namespace local_edge_cases
 
-using local_uintwide_t_small_unsigned_type =
-  #if defined(WIDE_INTEGER_NAMESPACE)
-  WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<local_edge_cases::local_digits2_small, std::uint16_t, void, false>;
-  #else
-  ::math::wide_integer::uintwide_t<local_edge_cases::local_digits2_small, std::uint16_t, void, false>;
-  #endif
+// Forward declaration
+template<typename IntegralTimePointType,
+         typename ClockType = std::chrono::high_resolution_clock>
+auto time_point() -> IntegralTimePointType;
 
+#if defined(WIDE_INTEGER_NAMESPACE)
+using local_uintwide_t_small_unsigned_type =
+  WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<local_edge_cases::local_digits2_small, std::uint16_t, void, false>;
+#else
+using local_uintwide_t_small_unsigned_type =
+  ::math::wide_integer::uintwide_t<local_edge_cases::local_digits2_small, std::uint16_t, void, false>;
+#endif
+
+#if defined(WIDE_INTEGER_NAMESPACE)
 using local_uintwide_t_small_signed_type =
-  #if defined(WIDE_INTEGER_NAMESPACE)
   WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<local_edge_cases::local_digits2_small, std::uint16_t, void, true>;
-  #else
+#else
+using local_uintwide_t_small_signed_type =
   ::math::wide_integer::uintwide_t<local_edge_cases::local_digits2_small, std::uint16_t, void, true>;
-  #endif
+#endif
 
 using local_uint_backend_type =
   boost::multiprecision::uintwide_t_backend<local_edge_cases::local_digits2,
@@ -116,7 +129,7 @@ enum class local_base
 };
 
 using eng_sgn_type = std::ranlux24;
-using eng_dig_type = std::minstd_rand0;
+using eng_dig_type = std::ranlux48;
 
 std::uniform_int_distribution<std::uint32_t> dist_sgn    (UINT32_C(0), UINT32_C(1));  // NOLINT(cert-err58-cpp,cppcoreguidelines-avoid-non-const-global-variables)
 std::uniform_int_distribution<std::uint32_t> dist_dig_dec(UINT32_C(1), UINT32_C(9));  // NOLINT(cert-err58-cpp,cppcoreguidelines-avoid-non-const-global-variables)
@@ -132,7 +145,7 @@ auto one_as_small_unsigned_type () -> const local_uintwide_t_small_unsigned_type
 auto m_one_as_small_signed_type () -> const local_uintwide_t_small_signed_type&;
 
 template<typename IntegralTimePointType,
-          typename ClockType = std::chrono::high_resolution_clock>
+         typename ClockType>
 auto time_point() -> IntegralTimePointType
 {
   using local_integral_time_point_type = IntegralTimePointType;
@@ -342,8 +355,8 @@ auto test_various_ostream_ops() -> bool
 {
   auto result_is_ok = true;
 
-  eng_sgn.seed(static_cast<typename eng_sgn_type::result_type>(std::random_device{ }()));
-  eng_dig.seed(static_cast<typename eng_dig_type::result_type>(std::random_device{ }()));
+  eng_sgn.seed(time_point<typename eng_sgn_type::result_type>());
+  eng_dig.seed(time_point<typename eng_dig_type::result_type>());
 
   {
     const auto u = local_uintwide_t_small_unsigned_type(static_cast<std::uint32_t>(UINT32_C(29363)));
@@ -627,8 +640,8 @@ auto test_various_roots_and_pow_etc() -> bool
   }
 
   {
-    const auto u      = zero_as_small_unsigned_type();
-    const auto u_root = sqrt(u);
+    const auto& u      = zero_as_small_unsigned_type();
+    const auto  u_root = sqrt(u);
 
     const auto result_sqrt_zero_is_ok = (u_root == 0U);
 
@@ -636,8 +649,8 @@ auto test_various_roots_and_pow_etc() -> bool
   }
 
   {
-    const auto u      = zero_as_small_unsigned_type();
-    const auto u_root = cbrt(u);
+    const auto& u      = zero_as_small_unsigned_type();
+    const auto  u_root = cbrt(u);
 
     const auto result_cbrt_zero_is_ok = (u_root == zero_as_small_unsigned_type());
 
@@ -645,8 +658,8 @@ auto test_various_roots_and_pow_etc() -> bool
   }
 
   {
-    const auto u      = zero_as_small_unsigned_type();
-    const auto u_root = rootk(u, 7U);
+    const auto& u      = zero_as_small_unsigned_type();
+    const auto  u_root = rootk(u, 7U);
 
     const auto result_rootk_zero_is_ok = (u_root == zero_as_small_unsigned_type());
 
@@ -800,7 +813,7 @@ auto test_various_roots_and_pow_etc() -> bool
 
     random_engine_type local_generator(generator);
 
-    constexpr std::array<int, static_cast<std::size_t>(UINT8_C(49))> small_primes =
+    static const std::array<int, static_cast<std::size_t>(UINT8_C(49))> small_primes =
     {
         2,
         3,   5,   7,  11,  13,  17,  19,  23,
@@ -974,14 +987,14 @@ auto test_various_isolated_edge_cases() -> bool // NOLINT(readability-function-c
           auto a(ten_pow_forty);
     const auto b(local_uintwide_t_small_unsigned_type("10000000000000000000000000000000000000000"));
 
-    const auto c(a %= b);
+    const auto& c(a %= b);
 
     #if (defined(__clang__) && (defined(__clang_major__) && (__clang_major__ > 6)))
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
     #endif
 
-    const auto d(a %= a); // NOLINT(clang-diagnostic-self-assign-overloaded)
+    const auto& d(a %= a); // NOLINT(clang-diagnostic-self-assign-overloaded)
 
     #if (defined(__clang__) && (defined(__clang_major__) && (__clang_major__ > 6)))
     #pragma GCC diagnostic pop
@@ -1070,20 +1083,713 @@ auto test_various_isolated_edge_cases() -> bool // NOLINT(readability-function-c
   return result_is_ok;
 }
 
+auto test_to_chars_and_to_string() -> bool // NOLINT(readability-function-cognitive-complexity)
+{
+  eng_sgn.seed(time_point<typename eng_sgn_type::result_type>());
+  eng_dig.seed(time_point<typename eng_dig_type::result_type>());
+
+  auto result_is_ok = true;
+
+  #if defined(__cpp_lib_to_chars)
+  for(auto   i = static_cast<unsigned>(UINT32_C(0));
+             i < static_cast<unsigned>(UINT32_C(256));
+           ++i)
+  {
+    // Verify write to_chars() and read back from string of unsigned uintwide_t.
+    // Use all three bases octal, decimal, and hexadecimal.
+
+    using to_chars_storage_array_oct_type =
+      std::array<char, static_cast<typename std::size_t>(local_uintwide_t_small_unsigned_type::wr_string_max_buffer_size_oct())>;
+
+    using to_chars_storage_array_dec_type =
+      std::array<char, static_cast<typename std::size_t>(local_uintwide_t_small_unsigned_type::wr_string_max_buffer_size_dec())>;
+
+    using to_chars_storage_array_hex_type =
+      std::array<char, static_cast<typename std::size_t>(local_uintwide_t_small_unsigned_type::wr_string_max_buffer_size_hex())>;
+
+    constexpr auto char_fill = '\0';
+
+    to_chars_storage_array_oct_type arr_oct { }; arr_oct.fill(char_fill);
+    to_chars_storage_array_dec_type arr_dec { }; arr_dec.fill(char_fill);
+    to_chars_storage_array_hex_type arr_hex { }; arr_hex.fill(char_fill);
+
+    auto u_gen = generate_wide_integer_value<local_uintwide_t_small_unsigned_type>();
+
+    using std::to_chars;
+
+    const auto result_oct_as_chars = to_chars(arr_oct.data(), arr_oct.data() + arr_oct.size(), u_gen,  8);
+    const auto result_dec_as_chars = to_chars(arr_dec.data(), arr_dec.data() + arr_dec.size(), u_gen, 10);
+    const auto result_hex_as_chars = to_chars(arr_hex.data(), arr_hex.data() + arr_hex.size(), u_gen, 16);
+
+    const auto result_oct_as_str = "0"  + std::string(arr_oct.data());
+    const auto result_dec_as_str =        std::string(arr_dec.data());
+    const auto result_hex_as_str = "0x" + std::string(arr_hex.data());
+
+    const local_uintwide_t_small_unsigned_type u_from_string_oct(result_oct_as_str.c_str());
+    const local_uintwide_t_small_unsigned_type u_from_string_dec(result_dec_as_str.c_str());
+    const local_uintwide_t_small_unsigned_type u_from_string_hex(result_hex_as_str.c_str());
+
+    const auto result_u_to_from_string_oct_is_ok = ((u_gen == u_from_string_oct) && (result_oct_as_chars.ec == std::errc()));
+    const auto result_u_to_from_string_dec_is_ok = ((u_gen == u_from_string_dec) && (result_dec_as_chars.ec == std::errc()));
+    const auto result_u_to_from_string_hex_is_ok = ((u_gen == u_from_string_hex) && (result_hex_as_chars.ec == std::errc()));
+
+    result_is_ok = (result_u_to_from_string_oct_is_ok && result_is_ok);
+    result_is_ok = (result_u_to_from_string_dec_is_ok && result_is_ok);
+    result_is_ok = (result_u_to_from_string_hex_is_ok && result_is_ok);
+  }
+
+  for(auto   i = static_cast<unsigned>(UINT32_C(0));
+             i < static_cast<unsigned>(UINT32_C(256));
+           ++i)
+  {
+    // Verify write to_chars() and read back from string of signed uintwide_t.
+    // Use only base decimal.
+
+    using to_chars_storage_array_dec_type =
+      std::array<char, static_cast<typename std::size_t>(local_uintwide_t_small_signed_type::wr_string_max_buffer_size_dec())>;
+
+    constexpr auto char_fill = '\0';
+
+    to_chars_storage_array_dec_type arr_dec { }; arr_dec.fill(char_fill);
+
+    auto n_gen = generate_wide_integer_value<local_uintwide_t_small_signed_type>(false);
+
+    using std::to_chars;
+
+    const auto result_dec_as_chars = to_chars(arr_dec.data(), arr_dec.data() + arr_dec.size(), n_gen, 10);
+
+    static_cast<void>(result_dec_as_chars);
+
+    const auto result_dec_as_str = std::string(arr_dec.data());
+
+    const local_uintwide_t_small_signed_type n_from_string_dec(result_dec_as_str.c_str());
+
+    const auto result_n_to_from_string_dec_is_ok = (n_gen == n_from_string_dec);
+
+    result_is_ok = (result_n_to_from_string_dec_is_ok && result_is_ok);
+  }
+  #endif // __cpp_lib_to_chars
+
+  #if !defined(WIDE_INTEGER_DISABLE_TO_STRING)
+  for(auto   i = static_cast<unsigned>(UINT32_C(0));
+             i < static_cast<unsigned>(UINT32_C(256));
+           ++i)
+  {
+    // Verify write to_string() and read back from string of unsigned uintwide_t.
+
+    auto u_gen = generate_wide_integer_value<local_uintwide_t_small_unsigned_type>();
+
+    using std::to_string;
+
+    const auto str_u = to_string(u_gen);
+
+    const local_uintwide_t_small_unsigned_type u_from_string(str_u.c_str());
+
+    const auto result_u_to_from_string_is_ok = (u_gen == u_from_string);
+
+    result_is_ok = (result_u_to_from_string_is_ok && result_is_ok);
+  }
+
+  for(auto   i = static_cast<unsigned>(UINT32_C(0));
+             i < static_cast<unsigned>(UINT32_C(256));
+           ++i)
+  {
+    // Verify write to_string() and read back from string of signed uintwide_t.
+
+    auto n_gen = generate_wide_integer_value<local_uintwide_t_small_signed_type>(false);
+
+    using std::to_string;
+
+    const auto str_n = to_string(n_gen);
+
+    const local_uintwide_t_small_signed_type n_from_string(str_n.c_str());
+
+    const auto result_n_to_from_string_is_ok = (n_gen == n_from_string);
+
+    result_is_ok = (result_n_to_from_string_is_ok && result_is_ok);
+  }
+
+  {
+    // Ensure that uintwide_t's function to_string (in namespace
+    // math::wide_integer) does *not* conflict with the standard library's
+    // std::to_string function name. Also ensure that ADL works properly
+    // for uintwide_t's namespace-specific to_string function.
+
+    using std::to_string;
+
+    const auto u_gen = generate_wide_integer_value<local_uintwide_t_small_unsigned_type>();
+    const auto n_gen = generate_wide_integer_value<local_uintwide_t_small_signed_type>(false);
+
+    const auto str_u = to_string(u_gen);
+    const auto str_n = to_string(n_gen);
+
+    const auto u64 = static_cast<std::uint64_t>(UINT64_C(0xFFFFFFFF55555555));
+    const auto ni  = static_cast<int>(INT8_C(42));
+
+    const auto str_u64 = to_string(u64);
+    const auto str_ni  = to_string(ni);
+
+    const auto str2_u64 = std::to_string(u64);
+    const auto str2_ni  = std::to_string(ni);
+
+    const auto result_to_strings_are_ok = (   (!str_u.empty())
+                                           && (!str_n.empty())
+                                           && (!str_u64.empty())
+                                           && (!str_ni.empty())
+                                           && (!str2_u64.empty())
+                                           && (!str2_ni.empty()));
+
+    result_is_ok = (result_to_strings_are_ok && result_is_ok);
+  }
+
+  for(auto   i = static_cast<unsigned>(UINT32_C(0));
+             i < static_cast<unsigned>(UINT32_C(32));
+           ++i)
+  {
+    // Verify write to_string() and read back from string of
+    // this test file's wide unsigned uintwide_t type.
+    // Thereby we ensure that the to_string() function
+    // will use dynamic allocation instead of stack allocation
+    // in this particular test.
+
+    using local_derived_uint_type = typename local_uint_backend_type::representation_type;
+
+    using std::to_string;
+
+    const auto u_gen = generate_wide_integer_value<local_derived_uint_type>();
+
+    const auto str_u = to_string(u_gen);
+
+    const local_derived_uint_type u_from_string(str_u.c_str());
+
+    const auto result_u_to_from_string_is_ok = (u_gen == u_from_string);
+
+    result_is_ok = (result_u_to_from_string_is_ok && result_is_ok);
+  }
+  #endif // !WIDE_INTEGER_DISABLE_TO_STRING
+
+  return result_is_ok;
+}
+
+auto test_import_bits() -> bool // NOLINT(readability-function-cognitive-complexity)
+{
+  eng_sgn.seed(time_point<typename eng_sgn_type::result_type>());
+  eng_dig.seed(time_point<typename eng_dig_type::result_type>());
+
+  using local_boost_small_uint_backend_type =
+    boost::multiprecision::cpp_int_backend<local_edge_cases::local_digits2_small,
+                                           local_edge_cases::local_digits2_small,
+                                           boost::multiprecision::unsigned_magnitude,
+                                           boost::multiprecision::unchecked,
+                                           void>;
+
+  using local_boost_small_uint_type =
+    boost::multiprecision::number<local_boost_small_uint_backend_type,
+                                  boost::multiprecision::et_off>;
+
+  auto result_is_ok = true;
+
+  static const std::array<bool, static_cast<std::size_t>(UINT8_C(2))> msv_options = { true, false };
+
+  for(const auto& msv_first : msv_options) // NOLINT
+  {
+    for(auto   i = static_cast<unsigned>(UINT32_C(0));
+               i < static_cast<unsigned>(UINT32_C(64));
+             ++i)
+    {
+      // Verify import_bits() and compare with Boost control value(s).
+      // The input and output ranges have elements having the same widths.
+      // Use the full bit width and representation length of uintwide_t.
+
+      using local_representation_type = typename local_uintwide_t_small_unsigned_type::representation_type;
+      using local_input_value_type    = typename local_representation_type::value_type;
+
+      auto u_gen = generate_wide_integer_value<local_uintwide_t_small_unsigned_type>();
+
+      local_representation_type bits(u_gen.crepresentation());
+
+      if(msv_first)
+      {
+        std::reverse(bits.begin(), bits.end());
+      }
+
+      local_uintwide_t_small_unsigned_type val_uintwide_t { };
+      local_boost_small_uint_type          val_boost      { };
+
+      const auto oscillated_chunk_size =
+        static_cast<unsigned>
+        (
+          static_cast<unsigned>(i % 2U) == 0U
+            ? static_cast<unsigned>(std::numeric_limits<local_input_value_type>::digits)
+            : 0U
+        );
+
+      static_cast<void>(import_bits(val_uintwide_t, bits.cbegin(), bits.cend(), oscillated_chunk_size, msv_first));
+      static_cast<void>(import_bits(val_boost,      bits.cbegin(), bits.cend(), oscillated_chunk_size, msv_first)); // NOLINT
+
+      using std::to_string;
+
+      const auto str_uintwide_t = to_string(val_uintwide_t);
+      const auto str_boost      = val_boost.str();
+
+      const auto result_import_bits_is_ok = ((str_uintwide_t == str_boost) && (u_gen == val_uintwide_t));
+
+      result_is_ok = (result_import_bits_is_ok && result_is_ok);
+    }
+  }
+
+  for(const auto& msv_first : msv_options) // NOLINT
+  {
+    static const std::array<unsigned, static_cast<std::size_t>(UINT8_C(3))> bits_for_chunks = { 7U, 9U, 15U };
+
+    for(const auto& chunk_size : bits_for_chunks)
+    {
+      for(auto   i = static_cast<unsigned>(UINT32_C(0));
+                 i < static_cast<unsigned>(UINT32_C(64));
+               ++i)
+      {
+        // Verify import_bits() and compare with Boost control value(s).
+        // The input and output ranges have elements having the same widths.
+        // Use various input bit counts less than the result limb's width.
+        // Use the full size of elements in the wide integer for the
+        // distance of the input range.
+
+        using local_representation_type = typename local_uintwide_t_small_unsigned_type::representation_type;
+
+        auto u_gen = generate_wide_integer_value<local_uintwide_t_small_unsigned_type>();
+
+        local_representation_type bits(u_gen.crepresentation());
+
+        if(msv_first)
+        {
+          std::reverse(bits.begin(), bits.end());
+        }
+
+        local_uintwide_t_small_unsigned_type val_uintwide_t { };
+        local_boost_small_uint_type          val_boost      { };
+
+        using std::to_string;
+
+        static_cast<void>(import_bits(val_uintwide_t, bits.cbegin(), bits.cend(), chunk_size, msv_first));
+        static_cast<void>(import_bits(val_boost,      bits.cbegin(), bits.cend(), chunk_size, msv_first)); // NOLINT
+
+        const auto str_uintwide_t = to_string(val_uintwide_t);
+        const auto str_boost      =           val_boost.str();
+
+        const auto result_import_bits_is_ok = (str_uintwide_t == str_boost);
+
+        result_is_ok = (result_import_bits_is_ok && result_is_ok);
+      }
+    }
+  }
+
+  for(const auto& msv_first : msv_options) // NOLINT
+  {
+    for(auto   i = static_cast<unsigned>(UINT32_C(0));
+               i < static_cast<unsigned>(UINT32_C(64));
+             ++i)
+    {
+      // Verify import_bits() and compare with Boost control value(s).
+      // The input and output ranges have elements having different widths.
+      // Use various input bit counts exceeding the result limb's width.
+      // Use the full size of elements in the wide integer for the
+      // distance of the input range.
+
+      using local_representation_type = typename local_uintwide_t_small_unsigned_type::representation_type;
+
+      using local_input_value_type = typename local_representation_type::value_type;
+
+      auto u_gen = generate_wide_integer_value<local_uintwide_t_small_unsigned_type>();
+
+      local_representation_type bits(u_gen.crepresentation());
+
+      #if defined(WIDE_INTEGER_NAMESPACE)
+      using local_input_double_width_value_type =
+        typename WIDE_INTEGER_NAMESPACE::math::wide_integer::detail::uint_type_helper<static_cast<std::size_t>(std::numeric_limits<local_input_value_type>::digits * 2)>::exact_unsigned_type;
+      #else
+      using local_input_double_width_value_type =
+        typename ::math::wide_integer::detail::uint_type_helper<static_cast<std::size_t>(std::numeric_limits<local_input_value_type>::digits * 2)>::exact_unsigned_type;
+      #endif
+
+      using local_double_width_input_array_type =
+        std::array<local_input_double_width_value_type, local_representation_type::static_size() / 2U>;
+
+      local_double_width_input_array_type bits_double_width;
+
+      {
+        using local_size_type = typename local_representation_type::size_type;
+
+        auto index = static_cast<local_size_type>(UINT8_C(0));
+
+        for(auto& elem : bits_double_width)
+        {
+          #if defined(WIDE_INTEGER_NAMESPACE)
+          using WIDE_INTEGER_NAMESPACE::math::wide_integer::detail::make_large;
+          #else
+          using ::math::wide_integer::detail::make_large;
+          #endif
+
+          const auto index_plus_one =
+            static_cast<local_size_type>
+            (
+              index + static_cast<local_size_type>(UINT8_C(1))
+            );
+
+          elem = make_large(bits[index], bits[index_plus_one]);
+
+          index = static_cast<local_size_type>(index + static_cast<local_size_type>(UINT8_C(2)));
+        }
+      }
+
+      local_uintwide_t_small_unsigned_type val_uintwide_t { };
+      local_boost_small_uint_type          val_boost      { };
+
+      using std::to_string;
+
+      static_cast<void>(import_bits(val_uintwide_t, bits_double_width.cbegin(), bits_double_width.cend(), static_cast<unsigned>(std::numeric_limits<local_input_double_width_value_type>::digits), msv_first));
+      static_cast<void>(import_bits(val_boost,      bits_double_width.cbegin(), bits_double_width.cend(), static_cast<unsigned>(std::numeric_limits<local_input_double_width_value_type>::digits), msv_first)); // NOLINT
+
+      const auto str_uintwide_t = to_string(val_uintwide_t);
+      const auto str_boost      =           val_boost.str();
+
+      const auto result_import_bits_is_ok = (str_uintwide_t == str_boost);
+
+      result_is_ok = (result_import_bits_is_ok && result_is_ok);
+    }
+  }
+
+  for(const auto& msv_first : msv_options) // NOLINT
+  {
+    for(auto   i = static_cast<unsigned>(UINT32_C(0));
+               i < static_cast<unsigned>(UINT32_C(64));
+             ++i)
+    {
+      // Verify import_bits() and compare with Boost control value(s).
+      // Use various input bit counts exceeding the result limb's width.
+      // Use only part of the size of elements in the wide integer for the
+      // distance of the input range.
+
+      using local_representation_type = typename local_uintwide_t_small_unsigned_type::representation_type;
+
+      using local_input_value_type = typename local_representation_type::value_type;
+
+      auto u_gen = generate_wide_integer_value<local_uintwide_t_small_unsigned_type>();
+
+      using local_representation_less_wide_type =
+        std::array<local_input_value_type, static_cast<std::size_t>(static_cast<std::size_t>(local_representation_type::static_size()) - 2U)>;
+
+      local_representation_less_wide_type bits { };
+
+      std::copy(u_gen.crepresentation().cbegin(),
+                u_gen.crepresentation().cbegin() + std::tuple_size<local_representation_less_wide_type>::value,
+                bits.begin());
+
+      #if defined(WIDE_INTEGER_NAMESPACE)
+      using local_input_double_width_value_type =
+        typename WIDE_INTEGER_NAMESPACE::math::wide_integer::detail::uint_type_helper<static_cast<std::size_t>(std::numeric_limits<local_input_value_type>::digits * 2)>::exact_unsigned_type;
+      #else
+      using local_input_double_width_value_type =
+        typename ::math::wide_integer::detail::uint_type_helper<static_cast<std::size_t>(std::numeric_limits<local_input_value_type>::digits * 2)>::exact_unsigned_type;
+      #endif
+
+      using local_double_width_less_wide_input_array_type =
+        std::array<local_input_double_width_value_type, std::tuple_size<local_representation_less_wide_type>::value / 2U>;
+
+      static_assert(std::tuple_size<local_double_width_less_wide_input_array_type>::value == static_cast<std::size_t>(static_cast<std::size_t>(static_cast<std::size_t>(local_representation_type::static_size()) / 2U) - 1U),
+                    "Error: Type definition widths are not OK");
+
+      local_double_width_less_wide_input_array_type bits_double_width;
+
+      {
+        using local_size_type = typename local_representation_type::size_type;
+
+        auto index = static_cast<local_size_type>(UINT8_C(0));
+
+        for(auto& elem : bits_double_width)
+        {
+          #if defined(WIDE_INTEGER_NAMESPACE)
+          using WIDE_INTEGER_NAMESPACE::math::wide_integer::detail::make_large;
+          #else
+          using ::math::wide_integer::detail::make_large;
+          #endif
+
+          const auto index_plus_one =
+            static_cast<local_size_type>
+            (
+              index + static_cast<local_size_type>(UINT8_C(1))
+            );
+
+          elem = make_large(bits[index], bits[index_plus_one]);
+
+          index = static_cast<local_size_type>(index + static_cast<local_size_type>(UINT8_C(2)));
+        }
+      }
+
+      local_uintwide_t_small_unsigned_type val_uintwide_t { };
+      local_boost_small_uint_type          val_boost      { };
+
+      using std::to_string;
+
+      static_cast<void>(import_bits(val_uintwide_t, bits_double_width.cbegin(), bits_double_width.cend(), static_cast<unsigned>(std::numeric_limits<local_input_double_width_value_type>::digits), msv_first));
+      static_cast<void>(import_bits(val_boost,      bits_double_width.cbegin(), bits_double_width.cend(), static_cast<unsigned>(std::numeric_limits<local_input_double_width_value_type>::digits), msv_first)); // NOLINT
+
+      const auto str_uintwide_t = to_string(val_uintwide_t);
+      const auto str_boost      =           val_boost.str();
+
+      const auto result_import_bits_is_ok = (str_uintwide_t == str_boost);
+
+      result_is_ok = (result_import_bits_is_ok && result_is_ok);
+    }
+  }
+
+  {
+    // Additional verification of import_bits().
+
+    const std::array<std::uint32_t, 1U> bits_in = { static_cast<std::uint32_t>(UINT32_C(0x5555AAAA)) };
+
+    using chunk_sizes_array_type = std::array<unsigned, static_cast<std::size_t>(UINT8_C(4))>;
+
+    static const chunk_sizes_array_type various_chunk_sizes =
+    {
+      0U, 32U, 24U, 2U
+    };
+
+    static const std::array<std::uint32_t, std::tuple_size<chunk_sizes_array_type>::value> various_import_results =
+    {
+      static_cast<std::uint32_t>(UINT32_C(0x5555AAAA)),
+      static_cast<std::uint32_t>(UINT32_C(0x5555AAAA)),
+      static_cast<std::uint32_t>(UINT32_C(0x0055AAAA)),
+      static_cast<std::uint32_t>(UINT32_C(2))
+    };
+
+    for(auto i = static_cast<std::size_t>(UINT8_C(0)); i < various_chunk_sizes.size(); ++i)
+    {
+      auto u = local_uintwide_t_small_unsigned_type { };
+
+      static_cast<void>
+      (
+        import_bits(u, bits_in.cbegin(), bits_in.cend(), various_chunk_sizes[i]) // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+      );
+
+      const auto result_import_is_ok = (u == various_import_results[i]); // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+
+      result_is_ok = (result_import_is_ok && result_is_ok);
+    }
+  }
+
+  return result_is_ok;
+}
+
+auto test_export_bits() -> bool // NOLINT(readability-function-cognitive-complexity)
+{
+  eng_sgn.seed(time_point<typename eng_sgn_type::result_type>());
+  eng_dig.seed(time_point<typename eng_dig_type::result_type>());
+
+  using local_boost_small_uint_backend_type =
+    boost::multiprecision::cpp_int_backend<local_edge_cases::local_digits2_small,
+                                           local_edge_cases::local_digits2_small,
+                                           boost::multiprecision::unsigned_magnitude,
+                                           boost::multiprecision::unchecked,
+                                           void>;
+
+  using local_boost_small_uint_type =
+    boost::multiprecision::number<local_boost_small_uint_backend_type,
+                                  boost::multiprecision::et_off>;
+
+  auto result_is_ok = true;
+
+  static const std::array<bool, static_cast<std::size_t>(UINT8_C(2))> msv_options = { true, false };
+
+  for(const auto& msv_first : msv_options) // NOLINT
+  {
+    for(auto   i = static_cast<unsigned>(UINT32_C(0));
+               i < static_cast<unsigned>(UINT32_C(64));
+             ++i)
+    {
+      // Verify export_bits() and compare with Boost control value(s).
+      // The input and output ranges have elements having the same widths.
+      // Use the full bit width and representation length of uintwide_t.
+
+      using local_representation_type = typename local_uintwide_t_small_unsigned_type::representation_type;
+
+      using local_input_value_type = typename local_representation_type::value_type;
+
+      using std::to_string;
+
+            auto val_uintwide_t = generate_wide_integer_value<local_uintwide_t_small_unsigned_type>();
+      const auto val_boost      = local_boost_small_uint_type(to_string(val_uintwide_t));
+
+      using local_output_array_type =
+        std::array<local_input_value_type, local_representation_type::static_size()>;
+
+      using local_result_value_type = typename local_output_array_type::value_type;
+
+      local_output_array_type bits_result_from_uintwide_t { };
+      local_output_array_type bits_result_from_boost      { };
+
+      static_cast<void>(export_bits(val_uintwide_t, bits_result_from_uintwide_t.begin(), static_cast<unsigned>(std::numeric_limits<local_result_value_type>::digits), msv_first));
+      static_cast<void>(export_bits(val_boost,      bits_result_from_boost.begin(),      static_cast<unsigned>(std::numeric_limits<local_result_value_type>::digits), msv_first)); // NOLINT
+
+      const auto result_export_bits_is_ok = std::equal(bits_result_from_uintwide_t.cbegin(),
+                                                       bits_result_from_uintwide_t.cend(),
+                                                       bits_result_from_boost.cbegin());
+
+      result_is_ok = (result_export_bits_is_ok && result_is_ok);
+    }
+  }
+
+  for(const auto& msv_first : msv_options) // NOLINT
+  {
+    static const std::array<unsigned, static_cast<std::size_t>(UINT8_C(3))> bits_for_chunks = { 7U, 9U, 15U };
+
+    for(const auto& chunk_size : bits_for_chunks)
+    {
+      for(auto   i = static_cast<unsigned>(UINT32_C(0));
+                 i < static_cast<unsigned>(UINT32_C(64));
+               ++i)
+      {
+        // Verify export_bits() and compare with Boost control value(s).
+        // The input and output ranges have elements having the same widths.
+        // Use various input bit counts less than the result limb's width.
+        // Use the full size of elements in the wide integer for the
+        // distance of the input range.
+
+        using local_representation_type = typename local_uintwide_t_small_unsigned_type::representation_type;
+
+        using local_input_value_type = typename local_representation_type::value_type;
+
+        using std::to_string;
+
+              auto val_uintwide_t = generate_wide_integer_value<local_uintwide_t_small_unsigned_type>();
+        const auto val_boost      = local_boost_small_uint_type(to_string(val_uintwide_t));
+
+        using local_output_vector_type = std::vector<local_input_value_type>;
+
+        using local_result_value_type = typename local_output_vector_type::value_type;
+
+        const auto output_distance_chunk_size_has_mod =
+        (
+          static_cast<int>
+          (
+            std::numeric_limits<local_uintwide_t_small_unsigned_type>::digits % static_cast<int>(chunk_size)
+          ) != 0
+        );
+
+        const auto output_distance =
+          static_cast<std::size_t>
+          (
+              static_cast<std::size_t>(std::numeric_limits<local_uintwide_t_small_unsigned_type>::digits / static_cast<int>(chunk_size))
+            + static_cast<std::size_t>
+              (
+                output_distance_chunk_size_has_mod ? static_cast<std::size_t>(UINT8_C(1))
+                                                   : static_cast<std::size_t>(UINT8_C(0))
+              )
+          );
+
+        local_output_vector_type bits_result_from_uintwide_t(output_distance, static_cast<local_result_value_type>(UINT8_C(0)));
+        local_output_vector_type bits_result_from_boost     (output_distance, static_cast<local_result_value_type>(UINT8_C(0)));
+
+        static_cast<void>(export_bits(val_uintwide_t, bits_result_from_uintwide_t.begin(), chunk_size, msv_first));
+        static_cast<void>(export_bits(val_boost,      bits_result_from_boost.begin(),      chunk_size, msv_first)); // NOLINT
+
+        const auto result_export_bits_is_ok = std::equal(bits_result_from_uintwide_t.cbegin(),
+                                                         bits_result_from_uintwide_t.cend(),
+                                                         bits_result_from_boost.cbegin());
+
+        result_is_ok = (result_export_bits_is_ok && result_is_ok);
+      }
+    }
+  }
+
+  for(const auto& msv_first : msv_options) // NOLINT
+  {
+    for(auto   i = static_cast<unsigned>(UINT32_C(0));
+               i < static_cast<unsigned>(UINT32_C(64));
+             ++i)
+    {
+      // Verify export_bits() and compare with Boost control value(s).
+      // The input and output ranges have elements having different widths.
+      // Use various input bit counts exceeding the result limb's width.
+      // Use the full size of elements in the wide integer for the
+      // distance of the input range.
+
+      using local_representation_type = typename local_uintwide_t_small_unsigned_type::representation_type;
+
+      using local_input_value_type = typename local_representation_type::value_type;
+
+      using std::to_string;
+
+            auto val_uintwide_t = generate_wide_integer_value<local_uintwide_t_small_unsigned_type>();
+      const auto val_boost      = local_boost_small_uint_type(to_string(val_uintwide_t));
+
+      #if defined(WIDE_INTEGER_NAMESPACE)
+      using local_result_double_width_value_type =
+        typename WIDE_INTEGER_NAMESPACE::math::wide_integer::detail::uint_type_helper<static_cast<std::size_t>(std::numeric_limits<local_input_value_type>::digits * 2)>::exact_unsigned_type;
+      #else
+      using local_result_double_width_value_type =
+        typename ::math::wide_integer::detail::uint_type_helper<static_cast<std::size_t>(std::numeric_limits<local_input_value_type>::digits * 2)>::exact_unsigned_type;
+      #endif
+
+      using local_double_width_output_array_type =
+        std::array<local_result_double_width_value_type, local_representation_type::static_size() / 2U>;
+
+      local_double_width_output_array_type bits_result_double_width_from_uintwide_t { };
+      local_double_width_output_array_type bits_result_double_width_from_boost      { };
+
+      static_cast<void>(export_bits(val_uintwide_t, bits_result_double_width_from_uintwide_t.begin(), static_cast<unsigned>(std::numeric_limits<local_result_double_width_value_type>::digits), msv_first));
+      static_cast<void>(export_bits(val_boost,      bits_result_double_width_from_boost.begin(),      static_cast<unsigned>(std::numeric_limits<local_result_double_width_value_type>::digits), msv_first)); // NOLINT
+
+      const auto result_export_bits_is_ok = std::equal(bits_result_double_width_from_uintwide_t.cbegin(),
+                                                       bits_result_double_width_from_uintwide_t.cend(),
+                                                       bits_result_double_width_from_boost.cbegin());
+
+      result_is_ok = (result_export_bits_is_ok && result_is_ok);
+    }
+  }
+
+  {
+    // Note that export_bits uses the absolute value.
+    // So test this feature by using negative one here.
+    const auto val_uintwide_t = local_uintwide_t_small_signed_type(-1);
+    const auto val_boost      = local_boost_small_uint_type(1);
+
+    using local_result_type = std::uint32_t;
+
+    auto result_one_uintwide_t = local_result_type { };
+    auto result_one_boost      = local_result_type { };
+
+    static_cast<void>(export_bits(val_uintwide_t, &result_one_uintwide_t, static_cast<unsigned>(std::numeric_limits<local_result_type>::digits)));
+    static_cast<void>(export_bits(val_boost,      &result_one_boost,      static_cast<unsigned>(std::numeric_limits<local_result_type>::digits)));
+
+    const auto result_is_one_and_compare_one_is_ok = (   (result_one_uintwide_t == result_one_boost)
+                                                      && (result_one_uintwide_t == 1));
+
+    result_is_ok = (result_is_one_and_compare_one_is_ok && result_is_ok);
+  }
+
+  return result_is_ok;
+}
+
 } // namespace test_uintwide_t_edge
 
 #if defined(WIDE_INTEGER_NAMESPACE)
 auto WIDE_INTEGER_NAMESPACE::math::wide_integer::test_uintwide_t_edge_cases() -> bool
 #else
-auto math::wide_integer::test_uintwide_t_edge_cases() -> bool
+auto ::math::wide_integer::test_uintwide_t_edge_cases() -> bool
 #endif
 {
-  bool result_is_ok = true;
+  test_uintwide_t_edge::eng_sgn.seed(test_uintwide_t_edge::time_point<typename test_uintwide_t_edge::eng_sgn_type::result_type>());
+  test_uintwide_t_edge::eng_dig.seed(test_uintwide_t_edge::time_point<typename test_uintwide_t_edge::eng_dig_type::result_type>());
+
+  auto result_is_ok = true;
 
   result_is_ok = (test_uintwide_t_edge::test_various_edge_operations    () && result_is_ok);
   result_is_ok = (test_uintwide_t_edge::test_various_ostream_ops        () && result_is_ok);
   result_is_ok = (test_uintwide_t_edge::test_various_roots_and_pow_etc  () && result_is_ok);
   result_is_ok = (test_uintwide_t_edge::test_various_isolated_edge_cases() && result_is_ok);
+  result_is_ok = (test_uintwide_t_edge::test_to_chars_and_to_string     () && result_is_ok);
+  result_is_ok = (test_uintwide_t_edge::test_import_bits                () && result_is_ok);
+  result_is_ok = (test_uintwide_t_edge::test_export_bits                () && result_is_ok);
 
   return result_is_ok;
 }
@@ -1099,7 +1805,7 @@ auto test_uintwide_t_edge::zero_as_limb() -> const typename test_uintwide_t_edge
 }
 // LCOV_EXCL_STOP
 
-auto test_uintwide_t_edge::zero_as_small_unsigned_type() -> const test_uintwide_t_edge::local_uintwide_t_small_unsigned_type&
+auto test_uintwide_t_edge::zero_as_small_unsigned_type() -> const test_uintwide_t_edge::local_uintwide_t_small_unsigned_type& // LCOV_EXCL_LINE
 {
   using local_limb_type = typename local_uintwide_t_small_unsigned_type::limb_type;
 
@@ -1119,7 +1825,7 @@ auto test_uintwide_t_edge::one_as_small_unsigned_type() -> const test_uintwide_t
   static const auto local_one_as_small_signed_type =
     local_uintwide_t_small_unsigned_type
     (
-      static_cast<typename std::make_signed<local_limb_type>::type>(UINT8_C(1))
+      static_cast<std::make_signed_t<local_limb_type>>(UINT8_C(1))
     );
 
   return local_one_as_small_signed_type;
@@ -1132,7 +1838,7 @@ auto test_uintwide_t_edge::m_one_as_small_signed_type() -> const test_uintwide_t
   static const auto local_m_one_as_small_signed_type =
     local_uintwide_t_small_signed_type
     (
-      static_cast<typename std::make_signed<local_limb_type>::type>(INT8_C(-1))
+      static_cast<std::make_signed_t<local_limb_type>>(INT8_C(-1))
     );
 
   return local_m_one_as_small_signed_type;
@@ -1148,9 +1854,12 @@ auto test_uintwide_t_edge::m_one_as_small_signed_type() -> const test_uintwide_t
 #pragma GCC diagnostic pop
 #endif
 
-#if (BOOST_VERSION < 108000)
 #if defined(__GNUC__)
+#if (BOOST_VERSION < 108000)
 #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
+#else
 #pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
 #endif

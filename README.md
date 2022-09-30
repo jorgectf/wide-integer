@@ -1,9 +1,6 @@
 ﻿Wide-integer
 ==================
 
->ANNOUNCEMENT: Support for C++11 will be deprecated in this library starting in summer 2022.
->New features will require _at_ _least_ C++14, as will existing features starting with the deprecation.
-
 <p align="center">
     <a href="https://github.com/ckormanyos/wide-integer/actions">
         <img src="https://github.com/ckormanyos/wide-integer/actions/workflows/wide_integer.yml/badge.svg" alt="Build Status"></a>
@@ -35,15 +32,17 @@ unsigned and signed integral types.
 This C++ template header-only library implements drop-in big integer types
 such as `uint128_t`, `uint256_t`, `uint384_t`, `uint512_t`, `uint1024_t`, `uint1536_t`, etc.
 These can be used essentially like regular built-in integers.
-Corresponding _signed_ integer types such as `int128_t`, `int256_t`, etc. can also be used.
+Corresponding _signed_ integer types such as `int128_t`, `int256_t`, and the like
+can also be used.
 
 The big integer class is called `math::wide_integer::uintwide_t`
 (i.e., `uintwide_t` residing in the `namespace` `math::wide_integer`),
 as shown in greater detail below.
 
 Wide-integer supports both unsigned as well as
-signed integral types having width of $1{\ldots}63{\times}2^{N}$
-while being $16$, $24$, $32$ or larger.
+signed integral types having width of
+$1 {\phantom{.}} {\ldots} {\phantom{.}} 63 {\phantom{.}} {\times} {\phantom{.}} 2^N$
+while being 16, 24, 32 or larger.
 In addition, small integer types such as software-synthesized versions of
 `uint24_t`, `uint48_t`, `uint64_t`, `uint96_t`, `uint128_t`, etc.
 (or signed counterparts of these) can also be created with wide-integer.
@@ -92,7 +91,7 @@ In particular,
 ```cpp
 #include <math/wide_integer/uintwide_t.h>
 
-using uint512_t = math::wide_integer::uintwide_t<512U, std::uint32_t>;
+using uint512_t = ::math::wide_integer::uintwide_t<512U, std::uint32_t>;
 
 static uint512_t x = 3U;
 ```
@@ -108,7 +107,7 @@ the default limb type is 32 bits in width and unsigned.
 The complete template signature of the `uintwide_t` class is shown below.
 
 ```cpp
-namespace math { namespace wide_integer {
+namespace math::wide_integer {
 
 namespace detail { using size_t = std::uint32_t; }
 
@@ -116,11 +115,12 @@ using detail::size_t;
 
 // Forward declaration of the uintwide_t template class.
 template<const size_t Width2,
-         typename LimbType = std::uint32_t,
+         typename LimbType      = std::uint32_t,
          typename AllocatorType = void,
-         const bool IsSigned = false>
+         const bool IsSigned    = false>
 class uintwide_t;
-} }
+
+} // namespace math::wide_integer
 ```
 
 `uintwide_t` also has a third optional template paramter that
@@ -322,10 +322,10 @@ readme page.
 Wide-Integer has been tested with numerous compilers, for target systems ranging from 8 to 64 bits.
 The library is specifically designed for efficiency with small to medium bit counts.
 Supported bit counts include integers
-$1{\ldots}63{\times}2^{N}$
-while being $16$, $24$, $32$ or larger such as
-$256$, $384$, $512$, $768$, $1024$,
-or other less common bit counts such as $11,264$, etc.
+$1 {\phantom{.}} {\ldots} {\phantom{.}} 63 {\phantom{.}} {\times} {\phantom{.}} 2^N$
+while being 16, 24, 32 or larger such as
+256, 384, 512, 768, 1024,
+or other less common bit counts such as 11,264, etc.
 
 Small, medium and large bit counts are supported.
 Common applications might use the range of `uint128_t`, `uint256_t` or `uint512_t`.
@@ -347,6 +347,7 @@ enabled or disabled at compile time with the compiler switches:
 
 ```cpp
 #define WIDE_INTEGER_DISABLE_IOSTREAM
+#define WIDE_INTEGER_DISABLE_TO_STRING
 #define WIDE_INTEGER_DISABLE_FLOAT_INTEROP
 #define WIDE_INTEGER_DISABLE_IMPLEMENT_UTIL_DYNAMIC_ARRAY
 #define WIDE_INTEGER_HAS_LIMB_TYPE_UINT64
@@ -364,6 +365,17 @@ I/O streaming can optionally be disabled with the compiler switch:
 
 The default setting is `WIDE_INTEGER_DISABLE_IOSTREAM` not set
 and I/O streaming operations are enabled.
+
+Conversion to `std::string` is supported with the namespace-specific function
+`to_string`. This analagous to the standard library's `std::to_string` function,
+but implemented specifically for instances of `uintwide_t`.
+Wide-integer's local, namespace-specific `to_string`
+function (and the inclusion of the necessary `<string>` header)
+are both deactivated with:
+
+```cpp
+#define WIDE_INTEGER_DISABLE_TO_STRING
+```
 
 Interoperability with built-in floating-point types
 such as construct-from, cast-to, binary arithmetic with
@@ -424,7 +436,7 @@ on GCC or clang.
 
 #include <math/wide_integer/uintwide_t.h>
 
-using uint_fast256_t = math::wide_integer::uintwide_t<256U, std::uint64_t>;
+using uint_fast256_t = ::math::wide_integer::uintwide_t<256U, std::uint64_t>;
 
 static uint_fast256_t x = 42U;
 ```
@@ -507,7 +519,7 @@ with a 256-bit unsigned integral type.
 
 auto main() -> int
 {
-  using uint256_t = math::wide_integer::uint256_t;
+  using uint256_t = ::math::wide_integer::uint256_t;
 
   // Construction from string. Additional constructors
   // are available from other built-in types.
@@ -535,10 +547,11 @@ auto main() -> int
 ```
 
 Wide-integer also supports a small selection of number-theoretical
-functions such as least and most significant bit, square root,
-$k^{th}$ root,
+functions such as least and most significant bit,
+square root, $k^{th}$ root,
 power, power-modulus, greatest common denominator
-and random number generation. These functions are be found via ADL.
+and random number generation.
+These functions are found via ADL.
 
 The example below calculates an integer square root.
 
@@ -550,7 +563,7 @@ The example below calculates an integer square root.
 
 auto main() -> int
 {
-  using uint256_t = math::wide_integer::uint256_t;
+  using uint256_t = ::math::wide_integer::uint256_t;
 
   const uint256_t a("0xF4DF741DE58BCB2F37F18372026EF9CBCFC456CB80AF54D53BDEED78410065DE");
 
@@ -573,10 +586,10 @@ The following sample performs add, subtract, multiply and divide of `uint48_t`.
 
 auto main() -> int
 {
-  using uint48_t = math::wide_integer::uintwide_t<48U, std::uint8_t>;
+  using uint48_t = ::math::wide_integer::uintwide_t<48U, std::uint8_t>;
 
-  using distribution_type  = math::wide_integer::uniform_int_distribution<48U, std::uint8_t>;
-  using random_engine_type = math::wide_integer::default_random_engine   <48U, std::uint8_t>;
+  using distribution_type  = ::math::wide_integer::uniform_int_distribution<48U, std::uint8_t>;
+  using random_engine_type = ::math::wide_integer::default_random_engine   <48U, std::uint8_t>;
 
   random_engine_type generator(0xF00DCAFEULL);
 
@@ -605,7 +618,7 @@ auto main() -> int
 The next example computes the real-valued cube root of $10^{3,333}$.
 The real-valued cube root of this very large unsigned integer is $10^{1,111}$.
 We will use the (somewhat uncommon) integral data type `uint11264_t`.
-Since `uint11264_t` has approximately $3,390$ decimal digits of precision,
+Since `uint11264_t` has approximately 3,390 decimal digits of precision,
 it is large enough to hold the value of $10^{3,333}$
 prior to (and following) the cube root operation.
 
@@ -617,7 +630,7 @@ prior to (and following) the cube root operation.
 
 auto main() -> int
 {
-  using uint11264_t = math::wide_integer::uintwide_t<11264U, std::uint32_t>;
+  using uint11264_t = ::math::wide_integer::uintwide_t<11264U, std::uint32_t>;
 
   // Create the string '1' + 3,333 times '0', which is
   // equivalent to the decimal integral value 10^3333.
@@ -655,7 +668,7 @@ of binary operations multiply, divide, intergal cast and comparison.
 
 // Use a C++20 compiler for this example.
 
-using uint256_t = math::wide_integer::uintwide_t<256U>;
+using uint256_t = ::math::wide_integer::uintwide_t<256U>;
 
 // Compile-time construction from string.
 constexpr uint256_t a("0xF4DF741DE58BCB2F37F18372026EF9CBCFC456CB80AF54D53BDEED78410065DE");
@@ -720,7 +733,7 @@ signed `int256_t`.
 ```cpp
 #include <math/wide_integer/uintwide_t.h>
 
-using int256_t = math::wide_integer::uintwide_t<256U, std::uint32_t, void, true>;
+using int256_t = ::math::wide_integer::uintwide_t<256U, std::uint32_t, void, true>;
 
 const int256_t n1(-3);
 const int256_t n2(-3);
@@ -739,7 +752,7 @@ negative arguments in number theoretical functions.
   - `cbrt` of `x` nexative integer returns `-cbrt(-x)`.
   - $k^{th}$ root of `x` negative returns zero unless the cube root is being computed, in which case `-cbrt(-x)` is returned.
   - GCD of `a`, `b` signed converts both arguments to positive and negates the result for `a`, `b` having opposite signs.
-  - Miller-Rabin primality testing treats negative inetegers as positive when testing for prime, thus extending the set of primes $p{\in}{\mathbb{Z}}$.
+  - Miller-Rabin primality testing treats negative inetegers as positive when testing for prime, thus extending the set of primes to negative integers.
   - MSB/LSB (most/least significant bit) do not differentiate between positive or negative argument such that MSB of a negative integer will be the highest bit of the corresponding unsigned type.
   - Printing both positive-valued and negative-valued signed integers in hexadecimal format is supported. When printing negative-valued, signed  `uintwide_t` in hexadecimal format, the sign bit and all other bits are treated as if the integer were unsigned. The negative sign is not explicitly shown when using hexadecimal format, even if the underlying integer is signed and negative-valued. A potential positive sign, however, will be shown for positive-valued signed integers in hexadecimal form in the presence of `std::showpos`.
 
@@ -753,8 +766,15 @@ in the wide-integer project.
   - Constructions-from built-in types are implicit. These are considered widening conversions.
   - Casts to built-in types are explicit and considered narrowing, regardless of the widths of left-and-right hand sides of the conversion.
   - All of both constructions-from as well as casts-to wider/less-wide and signed/unsigned wide-integer types are implicit (even if the conversion at hand is narrowing via having fewer bits). Casts such as `int128_t` to/from `uint160_t` and similar, for instance, are implicit.
-  - All wide-integer-types are move constructible.
+  - All wide-integer-types are move constructable.
   - All wide-integer types having the same widths and having the same limb-type (but possibly different sign) are move-assignable and `std::move()`-capable.
+
+### Importing and exporting bits
+
+Support for importing and exporting bits is granted by the subroutines
+`import_bits()` and `export_bits()`. Their interfaces, input/output forms
+and constraints are intended to be identical with those used in
+[Boost's import/export-bits functions](https://www.boost.org/doc/libs/1_80_0/libs/multiprecision/doc/html/boost_multiprecision/tut/import_export.html).
 
 ### Alternatives and limitations
 

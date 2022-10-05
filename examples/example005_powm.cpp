@@ -11,10 +11,14 @@
 #if defined(WIDE_INTEGER_NAMESPACE)
 auto WIDE_INTEGER_NAMESPACE::math::wide_integer::example005_powm() -> bool
 #else
-auto math::wide_integer::example005_powm() -> bool
+auto ::math::wide_integer::example005_powm() -> bool
 #endif
 {
-  using math::wide_integer::uint256_t;
+  #if defined(WIDE_INTEGER_NAMESPACE)
+  using WIDE_INTEGER_NAMESPACE::math::wide_integer::uint256_t;
+  #else
+  using ::math::wide_integer::uint256_t;
+  #endif
 
   WIDE_INTEGER_CONSTEXPR uint256_t b("0xDA4033C9B1B0675C20B7879EA63FFFBEEBEC3F89F78D22C393FAD98E7AE9BF69");
   WIDE_INTEGER_CONSTEXPR uint256_t p("0xA4748AD2DAFEED29C73927BD0945EF45EFEC9DAA95CC59390D406FC27236A174");
@@ -22,27 +26,29 @@ auto math::wide_integer::example005_powm() -> bool
 
   const uint256_t c = powm(b, p, m);
 
-  const bool result_is_ok =
+  const auto result_is_ok =
     (c == "0x5231F0EF6BBB3E78B9D7B1FA5F86EFA932E71BABD8A1CFF2C9EE5C396284ED07");
 
   return result_is_ok;
 }
 
 // Enable this if you would like to activate this main() as a standalone example.
-#if 0
+#if defined(WIDE_INTEGER_STANDALONE_EXAMPLE005_POWM)
 
 #include <iomanip>
 #include <iostream>
 
-int main()
+auto main() -> int
 {
   #if defined(WIDE_INTEGER_NAMESPACE)
-  const bool result_is_ok = WIDE_INTEGER_NAMESPACE::wide_integer::example005_powm();
+  const auto result_is_ok = WIDE_INTEGER_NAMESPACE::math::wide_integer::example005_powm();
   #else
-  const bool result_is_ok = wide_integer::example005_powm();
+  const auto result_is_ok = ::math::wide_integer::example005_powm();
   #endif
 
   std::cout << "result_is_ok: " << std::boolalpha << result_is_ok << std::endl;
+
+  return (result_is_ok ? 0 : -1);
 }
 
 #endif

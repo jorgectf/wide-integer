@@ -38,6 +38,36 @@
     <Filter Include=".tidy\make">
       <UniqueIdentifier>{c8663027-03cc-43d3-a3bc-927bbbdb3b3f}</UniqueIdentifier>
     </Filter>
+    <Filter Include=".gcov">
+      <UniqueIdentifier>{d3d4d6ad-0796-4bd5-b015-cd9c948caccf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include=".gcov\make">
+      <UniqueIdentifier>{09bf1894-26c1-40a4-870e-f338f0940b7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include=".props">
+      <UniqueIdentifier>{78812fa7-c747-46fb-861d-bb6cfe3070ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="target">
+      <UniqueIdentifier>{5e008254-9733-4d69-99e2-8d2f93c4b374}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="target\build">
+      <UniqueIdentifier>{67bbe456-ef04-4dd3-8fbe-d20ffe14c2dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="target\micros">
+      <UniqueIdentifier>{27be7d17-0d98-431e-bea5-96948075efef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="target\micros\stm32f429">
+      <UniqueIdentifier>{0bfd6ce7-a9b6-4847-9b45-f4cd69735e04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="target\micros\stm32f429\make">
+      <UniqueIdentifier>{e181fa1c-901d-4680-9c9b-62a576f135d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="target\micros\stm32f429\make\single">
+      <UniqueIdentifier>{083f53f0-1b7d-4be6-8adf-c6a9ab7671c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\examples\build">
+      <UniqueIdentifier>{24de4171-df89-40f3-87b7-3dfdee251467}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="boost\multiprecision\uintwide_t_backend.hpp">
@@ -75,6 +105,12 @@
     </ClInclude>
     <ClInclude Include="examples\example_uintwide_t.h">
       <Filter>Source Files\examples</Filter>
+    </ClInclude>
+    <ClInclude Include="test\test.hpp">
+      <Filter>Source Files\test</Filter>
+    </ClInclude>
+    <ClInclude Include="test\test_arithmetic.hpp">
+      <Filter>Source Files\test</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -165,6 +201,15 @@
     <ClCompile Include="examples\example012_rsa_crypto.cpp">
       <Filter>Source Files\examples</Filter>
     </ClCompile>
+    <ClCompile Include="test\test_uintwide_t_boost_backend_via_test_arithmetic.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="test\coverity.c">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="target\micros\stm32f429\make\single\crt.cpp">
+      <Filter>target\micros\stm32f429\make\single</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".github\workflows\wide_integer.yml">
@@ -182,6 +227,38 @@
     </None>
     <None Include=".tidy\make\make_tidy_03_flags.gmk">
       <Filter>.tidy\make</Filter>
+    </None>
+    <None Include=".github\workflows\wide_integer_sonar.yml">
+      <Filter>.github\workflows</Filter>
+    </None>
+    <None Include="sonar-project.properties" />
+    <None Include=".gcov\make\make_gcov_01_generic.gmk">
+      <Filter>.gcov\make</Filter>
+    </None>
+    <None Include=".gcov\make\make_gcov_02_files.gmk">
+      <Filter>.gcov\make</Filter>
+    </None>
+    <None Include=".gcov\make\make_gcov_03_flags.gmk">
+      <Filter>.gcov\make</Filter>
+    </None>
+    <None Include=".github\workflows\wide_integer_codecov.yml">
+      <Filter>.github\workflows</Filter>
+    </None>
+    <None Include=".props\Directory.Build.props">
+      <Filter>.props</Filter>
+    </None>
+    <None Include="codecov.yml" />
+    <None Include="target\micros\stm32f429\make\stm32f429.ld">
+      <Filter>target\micros\stm32f429\make</Filter>
+    </None>
+    <None Include="target\build\test_examples_emulator.py">
+      <Filter>target\build</Filter>
+    </None>
+    <None Include="examples\build\test_examples.sh">
+      <Filter>Source Files\examples\build</Filter>
+    </None>
+    <None Include=".github\workflows\CodeQL.yml">
+      <Filter>.github\workflows</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -7,7 +7,7 @@
 
 BOOST_ROOT_FOR_TIDY = /mnt/c/boost/boost_1_78_0
 CC                  = clang++
-STD                 = c++11
+STD                 = c++14
 
 ifneq ($(MY_BOOST_ROOT),)
 BOOST_ROOT_FOR_TIDY := $(MY_BOOST_ROOT)
@@ -41,13 +41,10 @@ C_INCLUDES  :=$(addprefix -I,$(C_INCLUDES))
 
 
 TIDY_CHECKS  = "*,                                                                \
-                -altera-id-dependent-backward-branch,                             \
                 -altera-struct-pack-align,                                        \
                 -altera-unroll-loops,                                             \
                 -fuchsia-*,                                                       \
-                -llvmlibc-*,                                                      \
-                -llvm-header-guard,                                               \
-                -readability-avoid-const-params-in-decls"
+                -llvmlibc-*"
 
 TIDY_FLAGS   = --extra-arg-before=--driver-mode=g++                 \
                --header-filter=uintwide_t                           \

@@ -1,6 +1,28 @@
 ﻿Wide-integer
-[![Build Status](https://github.com/ckormanyos/wide-integer/actions/workflows/wide_integer.yml/badge.svg)](https://github.com/ckormanyos/wide-integer/actions)
 ==================
+
+<p align="center">
+    <a href="https://github.com/ckormanyos/wide-integer/actions">
+        <img src="https://github.com/ckormanyos/wide-integer/actions/workflows/wide_integer.yml/badge.svg" alt="Build Status"></a>
+    <a href="https://github.com/ckormanyos/wide-integer/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc">
+        <img src="https://custom-icon-badges.herokuapp.com/github/issues-raw/ckormanyos/wide-integer?logo=github" alt="Issues" /></a>
+    <a href="https://github.com/ckormanyos/wide-integer/actions?query=workflow%3ACodeQL">
+        <img src="https://github.com/ckormanyos/wide-integer/workflows/CodeQL/badge.svg" alt="CodeQL"></a>
+    <a href="https://scan.coverity.com/projects/ckormanyos-wide-integer">
+        <img src="https://scan.coverity.com/projects/24742/badge.svg" alt="Coverity Scan"></a>
+    <a href="https://sonarcloud.io/summary/new_code?id=ckormanyos_wide-integer">
+        <img src="https://sonarcloud.io/api/project_badges/measure?project=ckormanyos_wide-integer&metric=alert_status" alt="Quality Gate Status"></a>
+    <a href="https://www.codacy.com/gh/ckormanyos/wide-integer/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ckormanyos/wide-integer&amp;utm_campaign=Badge_Grade">
+        <img src="https://app.codacy.com/project/badge/Grade/40d129959071441b9780e68998514226"/></a>
+    <a href="https://codecov.io/gh/ckormanyos/wide-integer">
+        <img src="https://codecov.io/gh/ckormanyos/wide-integer/branch/master/graph/badge.svg?token=kiBP4MAjdV" alt="code coverage"></a>
+    <a href="https://github.com/ckormanyos/wide-integer/blob/master/LICENSE_1_0.txt">
+        <img src="https://img.shields.io/badge/license-BSL%201.0-blue.svg" alt="Boost Software License 1.0"></a>
+    <a href="https://img.shields.io/github/commit-activity/y/ckormanyos/wide-integer">
+        <img src="https://img.shields.io/github/commit-activity/y/ckormanyos/wide-integer" alt="GitHub commit activity" /></a>
+    <a href="https://github.com/ckormanyos/wide-integer">
+        <img src="https://img.shields.io/github/languages/code-size/ckormanyos/wide-integer" alt="GitHub code size in bytes" /></a>
+</p>
 
 Wide-integer implements a generic C++ template for extended width
 unsigned and signed integral types.
@@ -8,25 +30,33 @@ unsigned and signed integral types.
 This C++ template header-only library implements drop-in big integer types
 such as `uint128_t`, `uint256_t`, `uint384_t`, `uint512_t`, `uint1024_t`, `uint1536_t`, etc.
 These can be used essentially like regular built-in integers.
-Corresponding _signed_ integer types such as `int128_t`, `int256_t`, etc. can also be used.
+Corresponding _signed_ integer types such as `int128_t`, `int256_t`, and the like
+can also be used.
 
 The big integer class is called `math::wide_integer::uintwide_t`
 (i.e., `uintwide_t` residing in the `namespace` `math::wide_integer`),
 as shown in greater detail below.
 
-Wide-integer supports both unsigned as well as signed integral types having width
-of <img src="https://render.githubusercontent.com/render/math?math=1{\ldots}63{\times}2^{N}">
+Wide-integer supports both unsigned as well as
+signed integral types having width of
+$1 {\phantom{.}} {\ldots} {\phantom{.}} 63 {\phantom{.}} {\times} {\phantom{.}} 2^N$
 while being 16, 24, 32 or larger.
 In addition, small integer types such as software-synthesized versions of
 `uint24_t`, `uint48_t`, `uint64_t`, `uint96_t`, `uint128_t`, etc.
 (or signed counterparts of these) can also be created with wide-integer.
+
+We also emphasize here that less-common types (i.e., those less common than, say,
+`uint128_t`, `uint256_t`, `uint512_t`, etc.) can also be synthesized.
+Types such as `uint80_t` made from five 16-bit limbs,
+or `uint96_t` composed of three 32-bit limbs, or
+other similar types can be readily synthesized with wide-integer.
 
 Wide-integer also features basic realizations of several
 elementary and number theoretical functions such as root finding,
 random distribution, Miller-Rabin primality testing,
 greatest common denominator (GCD) and more.
 
-Inclusion of a single C++11 header file
+Inclusion of a single C++14 header file
 is all that is needed for using wide-integer,
 as shown in the [examples](./examples).
 
@@ -35,8 +65,8 @@ as shown in the [examples](./examples).
   - Signed and unsigned versions of `uintwide_t` should behave as closely as possible to the behaviors of signed and unsigned versions of built-in `int`.
   - Relatively wide precision range from 24, 32, 64 bits up to tens of thousands of bits.
   - Moderately good efficiency over the entire wide precision range.
-  - Clean header-only C++11 design.
-  - Seamless portability to any modern C++11, 14, 17, 20 compiler.
+  - Clean header-only C++14 design.
+  - Seamless portability to any modern C++14, 17, 20, 23 compiler.
   - Scalability with small memory footprint and efficiency suitable for both PC/workstation systems as well as _bare-metal_ embedded systems.
   - C++20 `constexpr`-_ness_ for construction, cast to built-in types, binary arithmetic, comparison operations, some elementary functions and more.
 
@@ -49,23 +79,23 @@ its directory. Include this header path to the compiler's set
 of include paths or in your project.
 Then simply `#include <uintwide_t.h>` the normal C++ way.
 
-Easy application follows via traditional C-style typedef or C++11 alias
+Easy application follows via traditional C-style typedef or alias
 such as `uint512_t`. An instance of the defined type can be used very much
 like a built-in integral type. In the following code, for example,
 the static `uint512_t` variable `x` is initialized with unsigned value `3U`.
 
 In particular,
 
-```C
+```cpp
 #include <math/wide_integer/uintwide_t.h>
 
-using uint512_t = math::wide_integer::uintwide_t<512U, std::uint32_t>;
+using uint512_t = ::math::wide_integer::uintwide_t<512U, std::uint32_t>;
 
 static uint512_t x = 3U;
 ```
 
 The code sequence above defines the local data type `uint512_t` with
-a C++11 alias. The first template parameter `512U` sets the binary width
+an alias. The first template parameter `512U` sets the binary width
 (or bit count) while the second optional template parameter `std::uint32_t`
 sets the internal _limb_ _type_. The limb type must be unsigned and one of
 `std::uint8_t`, `std::uint16_t`, `std::uint32_t` or on some systems
@@ -74,8 +104,8 @@ the default limb type is 32 bits in width and unsigned.
 
 The complete template signature of the `uintwide_t` class is shown below.
 
-```C
-namespace math { namespace wide_integer {
+```cpp
+namespace math::wide_integer {
 
 namespace detail { using size_t = std::uint32_t; }
 
@@ -83,11 +113,12 @@ using detail::size_t;
 
 // Forward declaration of the uintwide_t template class.
 template<const size_t Width2,
-         typename LimbType = std::uint32_t,
+         typename LimbType      = std::uint32_t,
          typename AllocatorType = void,
-         const bool IsSigned = false>
+         const bool IsSigned    = false>
 class uintwide_t;
-} }
+
+} // namespace math::wide_integer
 ```
 
 `uintwide_t` also has a third optional template paramter that
@@ -143,13 +174,13 @@ on how to use wide-integer.
   - ![`example011_uint24_t.cpp`](./examples/example011_uint24_t.cpp) performs calculations with 24-bits, which is definitely on the small side of the range of wide-integer.
   - ![`example012_rsa_crypto.cpp`](./examples/example012_rsa_crypto.cpp) performs cryptographic calculations with 2048-bits, exploring a standardized test case.
 
-## Building, testing and CI
+## Building
 
 ### Build Status
-[![Build Status](https://github.com/ckormanyos/wide-integer/actions/workflows/wide_integer.yml/badge.svg)](https://github.com/ckormanyos/wide-integer/actions)
 
 The recent status of building and executing the tests and examples
 in Continuous Integration (CI) is always shown in the Build Status banner.
+Additional banners from other syntax checks and builds may also be visible.
 
 It is also possible, if desired, to build and execute
 the tests and examples using various different OS/compiler
@@ -159,8 +190,8 @@ combinations.
 
 Building and running the tests and examples can be accomplished
 using the Microsoft VisualStudio solution workspace provided
-in `wide_integer.sln`. The MSVC solution file
-is located in the project's root directory.
+in `wide_integer.sln`, `wide_integer_vs2022.sln`, etc.
+The MSVC solution file(s) are located in the project's root directory.
 
 ### Build with CMake
 
@@ -199,7 +230,7 @@ g++                                         \
 -Wextra                                     \
 -Wno-maybe-uninitialized                    \
 -Wno-cast-function-type                     \
--std=gnu++11                                \
+-std=c++14                                  \
 -DWIDE_INTEGER_HAS_LIMB_TYPE_UINT64         \
 -I.                                         \
 -I../boost-root                             \
@@ -237,6 +268,8 @@ examples/example012_rsa_crypto.cpp          \
 -o wide_integer.exe
 ```
 
+## Testing, CI and quality checks
+
 ### Testing
 
 Testing is definitely a big issue. A growing, supported
@@ -247,17 +280,49 @@ project or a variety of other build/make options that use easy-to-understand
 subroutines called from `main()`. These exercise the various
 examples and the full suite of test cases.
 
-CI runs on push and pull request using GitHub Actions.
+If an issue is reported, reproduced and verified, an attempt
+is made to correct it without breaking any other
+code. Upon successful correction, specific test cases
+exercising the reported issue are usually added as part
+of the issue resolution process.
+
+### CI and Quality checks
+
+CI runs on push-to-branch and pull request using GitHub Actions.
 Various compilers, operating systems, and C++ standards
-ranging from C++11, 14, 17, 20 are included in CI.
+ranging from C++14, 17, 20, 23 are included in CI.
+
+In CI, we use both elevated GCC/clang compiler warnings
+as well as MSVC level 4 warnings active on the correspondoing platforms.
+A wide variety of run-time sanitizers
+are also used in CI in order to assure dynamic quality.
+For syntax checking, clang-tidy is used both in CI
+as well as in offline checks to improve static code quality.
+
+Additional quality checks are performed on pull-request
+and merge to master using modern third party open-source services.
+These include
+[LGTM](https://lgtm.com/projects/g/ckormanyos/wide-integer/alerts/?mode=list),
+[Synopsis Coverity](https://scan.coverity.com/projects/ckormanyos-wide-integer),
+and [CodeSonar](https://sonarcloud.io/summary/new_code?id=ckormanyos_wide-integer).
+At the moment, the Coverity check is run with manual report submission.
+Automation of this is, however, planned.
+
+Code coverage uses GCC/gcov/lcov and has a
+quality-gate with comparison/baseline-check provided by
+[Codecov](https://app.codecov.io/gh/ckormanyos/wide-integer).
+
+Quality badges are displayed at the top of this repository's
+readme page.
 
 ## Additional details
 
 Wide-Integer has been tested with numerous compilers, for target systems ranging from 8 to 64 bits.
 The library is specifically designed for efficiency with small to medium bit counts.
 Supported bit counts include integers
-<img src="https://render.githubusercontent.com/render/math?math=1{\ldots}63{\times}2^{N}">
-while being 16, 24, 32 or larger such as 256, 384, 512, 768, 1024,
+$1 {\phantom{.}} {\ldots} {\phantom{.}} 63 {\phantom{.}} {\times} {\phantom{.}} 2^N$
+while being 16, 24, 32 or larger such as
+256, 384, 512, 768, 1024,
 or other less common bit counts such as 11,264, etc.
 
 Small, medium and large bit counts are supported.
@@ -278,32 +343,45 @@ programming environments.
 Various configuration features can optionally be
 enabled or disabled at compile time with the compiler switches:
 
-```C
+```cpp
 #define WIDE_INTEGER_DISABLE_IOSTREAM
+#define WIDE_INTEGER_DISABLE_TO_STRING
 #define WIDE_INTEGER_DISABLE_FLOAT_INTEROP
 #define WIDE_INTEGER_DISABLE_IMPLEMENT_UTIL_DYNAMIC_ARRAY
 #define WIDE_INTEGER_HAS_LIMB_TYPE_UINT64
 #define WIDE_INTEGER_HAS_MUL_8_BY_8_UNROLL
 #define WIDE_INTEGER_DISABLE_TRIVIAL_COPY_AND_STD_LAYOUT_CHECKS
 #define WIDE_INTEGER_NAMESPACE
+#define WIDE_INTEGER_DISABLE_WIDE_INTEGER_CONSTEXPR
 ```
 
 When working with even the most tiny microcontroller systems,
 I/O streaming can optionally be disabled with the compiler switch:
 
-```C
+```cpp
 #define WIDE_INTEGER_DISABLE_IOSTREAM
 ```
 
 The default setting is `WIDE_INTEGER_DISABLE_IOSTREAM` not set
 and I/O streaming operations are enabled.
 
+Conversion to `std::string` is supported with the namespace-specific function
+`to_string`. This analagous to the standard library's `std::to_string` function,
+but implemented specifically for instances of `uintwide_t`.
+Wide-integer's local, namespace-specific `to_string`
+function (and the inclusion of the necessary `<string>` header)
+are both deactivated with:
+
+```cpp
+#define WIDE_INTEGER_DISABLE_TO_STRING
+```
+
 Interoperability with built-in floating-point types
 such as construct-from, cast-to, binary arithmetic with
 built-in floating-point types can be
 optionally disabled by defining:
 
-```C
+```cpp
 #define WIDE_INTEGER_DISABLE_FLOAT_INTEROP
 ```
 
@@ -312,7 +390,7 @@ and all available functions implementing construction-from,
 cast-to, binary arithmetic with built-in floating-point types
 are enabled.
 
-```C
+```cpp
 #define WIDE_INTEGER_DISABLE_IMPLEMENT_UTIL_DYNAMIC_ARRAY
 ```
 
@@ -336,14 +414,14 @@ a 64-bit limb of type `uint64_t` can be used.
 Enable the 64-bit limb type on such systems
 with the compiler switch:
 
-```C
+```cpp
 #define WIDE_INTEGER_HAS_LIMB_TYPE_UINT64
 ```
 
 or (when using GCC, clang or similar) on the compiler
 command line with:
 
-```C
+```cpp
 -DWIDE_INTEGER_HAS_LIMB_TYPE_UINT64
 ```
 
@@ -352,19 +430,19 @@ This macro is disabled by default.
 The example below, for instance, uses a 64-bit limb type
 on GCC or clang.
 
-```C
+```cpp
 #define WIDE_INTEGER_HAS_LIMB_TYPE_UINT64
 
 #include <math/wide_integer/uintwide_t.h>
 
-using uint_fast256_t = math::wide_integer::uintwide_t<256U, std::uint64_t>;
+using uint_fast256_t = ::math::wide_integer::uintwide_t<256U, std::uint64_t>;
 
 static uint_fast256_t x = 42U;
 ```
 
 Another potential optimization macro can be activated with:
 
-```C
+```cpp
 #define WIDE_INTEGER_HAS_MUL_8_BY_8_UNROLL
 ```
 
@@ -373,7 +451,7 @@ by manually unrolling the multiplication loop(s) for
 `uintwide_t` instances having 8 limbs. This macro is disabled
 by default.
 
-```C
+```cpp
 #define WIDE_INTEGER_DISABLE_TRIVIAL_COPY_AND_STD_LAYOUT_CHECKS
 ```
 
@@ -388,28 +466,63 @@ these compile-time checks via activation of this macro.
 This macro is disabled by default and both the trivially-copyable
 as well as the standard-layout compile-time checks are active.
 
-```C
+```cpp
 #define WIDE_INTEGER_NAMESPACE
 ```
 
-This macro can be used in strict, exacting applications for which
-using the unqualified, global namespace `math` or `::math` is undesired or inacceptable.
+This is an advanced macro intended to be used in strict, exacting applications for which
+using the unqualified, global namespace `math` (i.e., `namespace` `::math`) is undesired or inacceptable.
 We recall that all parts of the wide-integer implementation,
 such as the `uintwide_t` class and its associated implementation
 details reside within `namespace` `::math::wide_integer`
-Defining the macro `WIDE_INTEGER_NAMESPACE` to be something like,
-for instance, `-DWIDE_INTEGER_NAMESPACE=something_unique` places
-all parts of the wide-integer implementation and its details
-within the prepended outer namespace `something_unique` ---
-as in `namespace` `::something_unique::math::wide_integer`.
-Vary the actual name or nesting depth of the desired prepended
-outer namespace if/as needed for your project.
 
-By default the macro `WIDE_INTEGER_NAMESPACE` is defined
-(but defined to be nothing, i.e., empty).
+Defining the macro `WIDE_INTEGER_NAMESPACE` to be something like,
+for instance,
+
+```sh
+-DWIDE_INTEGER_NAMESPACE=something_unique
+```
+
+places all parts of the wide-integer implementation and its details
+within the prepended outer namespace `something_unique` ---
+as in
+
+```cpp
+namespace something_unique::math::wide_integer
+{
+  // ...
+}
+```
+
+When utilizing the `WIDE_INTEGER_NAMESPACE` option,
+vary the actual name or nesting depth of the desired prepended
+outer namespace if/as needed for your particular project.
+
+By default the macro `WIDE_INTEGER_NAMESPACE` is not defined.
 In this default state, `namespace` `::math::wide_integer` is used
 and the `uintwide_t` class and its associated implementation
 details reside therein.
+
+Domain-specific, non-supported prototyping can be (partially)
+enabled by defining the macro
+
+```
+#define WIDE_INTEGER_DISABLE_WIDE_INTEGER_CONSTEXPR
+```
+
+This advanced macro disables most C++20 `constexpr` features.
+It also disables standard layout and trivially constructable
+attributes. Advanced prototyping or other investigations
+might need non-standard storage container(s)
+instead of wide-integer's default-supplied containers.
+
+Non-standard storage containers or customized memory containers
+might not support full `constexpr`-ness. Use this macro
+if needed to disable these features when manually substituting
+non-standard containers instead of wide-integer's
+default-supplied containers. Note: During verification-steps
+of wide-integer, this macro has been used to perform
+algorithmic proof-of-concept via use of `std::list` for storage.
 
 ## Detailed examples
 
@@ -418,15 +531,15 @@ We will now present various straightforward detailed examples.
 The code below performs some elementary algebraic calculations
 with a 256-bit unsigned integral type.
 
-```C
+```cpp
 #include <iomanip>
 #include <iostream>
 
 #include <math/wide_integer/uintwide_t.h>
 
-int main()
+auto main() -> int
 {
-  using uint256_t = math::wide_integer::uint256_t;
+  using uint256_t = ::math::wide_integer::uint256_t;
 
   // Construction from string. Additional constructors
   // are available from other built-in types.
@@ -439,7 +552,7 @@ int main()
   const uint256_t d = (a / b);
 
   // Logical comparison.
-  const bool result_is_ok = (   (c == "0xE491A360C57EB4306C61F9A04F7F7D99BE3676AAD2D71C5592D5AE70F84AF076")
+  const auto result_is_ok = (   (c == "0xE491A360C57EB4306C61F9A04F7F7D99BE3676AAD2D71C5592D5AE70F84AF076")
                              && (d == "0xA"));
 
   // Print the hexadecimal representation string output.
@@ -454,28 +567,29 @@ int main()
 ```
 
 Wide-integer also supports a small selection of number-theoretical
-functions such as least and most significant bit, square root,
-<img src="https://render.githubusercontent.com/render/math?math=k^{th}"> root,
+functions such as least and most significant bit,
+square root, $k^{th}$ root,
 power, power-modulus, greatest common denominator
-and random number generation. These functions are be found via ADL.
+and random number generation.
+These functions are found via ADL.
 
 The example below calculates an integer square root.
 
-```C
+```cpp
 #include <iomanip>
 #include <iostream>
 
 #include <math/wide_integer/uintwide_t.h>
 
-int main()
+auto main() -> int
 {
-  using uint256_t = math::wide_integer::uint256_t;
+  using uint256_t = ::math::wide_integer::uint256_t;
 
   const uint256_t a("0xF4DF741DE58BCB2F37F18372026EF9CBCFC456CB80AF54D53BDEED78410065DE");
 
   const uint256_t s = sqrt(a);
 
-  const bool result_is_ok =
+  const auto result_is_ok =
     (s == "0xFA5FE7853F1D4AD92BDF244179CA178B");
 
   std::cout << "result_is_ok: " << std::boolalpha << result_is_ok << std::endl;
@@ -484,18 +598,18 @@ int main()
 
 The following sample performs add, subtract, multiply and divide of `uint48_t`.
 
-```C
+```cpp
 #include <iomanip>
 #include <iostream>
 
 #include <math/wide_integer/uintwide_t.h>
 
-int main()
+auto main() -> int
 {
-  using uint48_t = math::wide_integer::uintwide_t<48U, std::uint8_t>;
+  using uint48_t = ::math::wide_integer::uintwide_t<48U, std::uint8_t>;
 
-  using distribution_type  = math::wide_integer::uniform_int_distribution<48U, std::uint8_t>;
-  using random_engine_type = math::wide_integer::default_random_engine   <48U, std::uint8_t>;
+  using distribution_type  = ::math::wide_integer::uniform_int_distribution<48U, std::uint8_t>;
+  using random_engine_type = ::math::wide_integer::default_random_engine   <48U, std::uint8_t>;
 
   random_engine_type generator(0xF00DCAFEULL);
 
@@ -512,7 +626,7 @@ int main()
   const uint48_t c_mul = (a * b);
   const uint48_t c_div = (a / b);
 
-  const bool result_is_ok = (   (c_add == ((a64 + b64) & UINT64_C(0x0000FFFFFFFFFFFF)))
+  const auto result_is_ok = (   (c_add == ((a64 + b64) & UINT64_C(0x0000FFFFFFFFFFFF)))
                              && (c_sub == ((a64 - b64) & UINT64_C(0x0000FFFFFFFFFFFF)))
                              && (c_mul == ((a64 * b64) & UINT64_C(0x0000FFFFFFFFFFFF)))
                              && (c_div == ((a64 / b64) & UINT64_C(0x0000FFFFFFFFFFFF))));
@@ -521,38 +635,27 @@ int main()
 }
 ```
 
-The next example computes the real-valued cube root of
-<img src="https://render.githubusercontent.com/render/math?math=10^{3,333}">.
-The real-valued cube root of this very large unsigned integer is
-<img src="https://render.githubusercontent.com/render/math?math=10^{1,111}">.
+The next example computes the real-valued cube root of $10^{3,333}$.
+The real-valued cube root of this very large unsigned integer is $10^{1,111}$.
 We will use the (somewhat uncommon) integral data type `uint11264_t`.
 Since `uint11264_t` has approximately 3,390 decimal digits of precision,
-it is large enough to hold the value of
-<img src="https://render.githubusercontent.com/render/math?math=10^{3,333}">
+it is large enough to hold the value of $10^{3,333}$
 prior to (and following) the cube root operation.
 
-```C
+```cpp
 #include <iomanip>
 #include <iostream>
 
 #include <math/wide_integer/uintwide_t.h>
 
-int main()
+auto main() -> int
 {
-  using uint11264_t = math::wide_integer::uintwide_t<11264U, std::uint32_t>;
+  using uint11264_t = ::math::wide_integer::uintwide_t<11264U, std::uint32_t>;
 
   // Create the string '1' + 3,333 times '0', which is
   // equivalent to the decimal integral value 10^3333.
-  std::array<char, 3335U> str_a;
 
-  std::fill(str_a.begin() + 1U,
-            str_a.begin() + 1U + 3333U,
-            '0');
-
-  str_a.front() = '1';
-  str_a.back()  = '\0';
-
-  std::array<char, 1113U> str_control;
+  const std::string str_a = "1" + std::string(3333U, '0');
 
   const uint11264_t a = str_a.data();
 
@@ -561,14 +664,10 @@ int main()
   // Create the string '1' + 1,111 times '0', which is
   // equivalent to the decimal integral value 10^1111.
   // (This is the cube root of 10^3333.)
-  std::fill(str_control.begin() + 1U,
-            str_control.begin() + 1U + 1111U,
-            '0');
 
-  str_control.front() = '1';
-  str_control.back()  = '\0';
+  const std::string str_control = "1" + std::string(1111U, '0');
 
-  const bool result_is_ok = (s == str_control.data());
+  const auto result_is_ok = (s == uint11264_t(str_control.data()));
 
   std::cout << "result_is_ok: " << std::boolalpha << result_is_ok << std::endl;
 }
@@ -584,12 +683,12 @@ The following code, for instance, shows compile-time instantiations
 of `uintwide_t` from character strings with subsequent `constexpr` evaluations
 of binary operations multiply, divide, intergal cast and comparison.
 
-```C
+```cpp
 #include <math/wide_integer/uintwide_t.h>
 
 // Use a C++20 compiler for this example.
 
-using uint256_t = math::wide_integer::uintwide_t<256U>;
+using uint256_t = ::math::wide_integer::uintwide_t<256U>;
 
 // Compile-time construction from string.
 constexpr uint256_t a("0xF4DF741DE58BCB2F37F18372026EF9CBCFC456CB80AF54D53BDEED78410065DE");
@@ -604,13 +703,13 @@ constexpr bool result_is_ok = (   (c == "0xE491A360C57EB4306C61F9A04F7F7D99BE367
                                && (std::uint_fast8_t(d) == 10U));
 
 // constexpr verification.
-static_assert(result_is_ok == true, "Error: example is not OK!");
+static_assert(result_is_ok, "Error: example is not OK!");
 ```
 
-`constexpr`-_ness_ of `uintwide_t` has been checked on GCC 10, GCC 11, clang 10
+`constexpr`-_ness_ of `uintwide_t` has been checked on GCC 10 and up, clang 10 and up
 (with `-std=c++20`) and VC 14.2 (with `/std:c++latest`),
-also for various embedded compilers such as `avr-gcc` 10 and 11,
-`arm-non-eabi-gcc` 10, and more. In addition,
+also for various embedded compilers such as `avr-gcc` 10 and up,
+`arm-non-eabi-gcc` 10 and up, and more. In addition,
 less modern compiler versions in addition to some other compilers
 having standards such as C++14, 17, 2a have also been checked
 for `constexpr` usage of `uintwide_t`. If you have an older
@@ -622,7 +721,7 @@ availability is unknown, the preprocessor symbols below can be useful.
 These symbols are defined or set directly within the header(s)
 of the wide_integer library.
 
-```C
+```cpp
 WIDE_INTEGER_CONSTEXPR
 WIDE_INTEGER_CONSTEXPR_IS_COMPILE_TIME_CONST
 ```
@@ -651,10 +750,10 @@ signed-_ness_ (or unsigned-_ness_) of `uintwide_t`.
 The code below, for instance, uses an aliased version of
 signed `int256_t`.
 
-```C
+```cpp
 #include <math/wide_integer/uintwide_t.h>
 
-using int256_t = math::wide_integer::uintwide_t<256U, std::uint32_t, void, true>;
+using int256_t = ::math::wide_integer::uintwide_t<256U, std::uint32_t, void, true>;
 
 const int256_t n1(-3);
 const int256_t n2(-3);
@@ -671,19 +770,50 @@ negative arguments in number theoretical functions.
   - Right shift by `n` bits via `operator>>(n)` performs a so-called _arithmetic_ right shift (ASHR). For signed integers having negative value, right-shift continually fills the sign bit with 1 while shifting right. The result is similar to signed division and closely mimics common compiler behavior for right-shift of negative-valued built-in signed `int`.
   - `sqrt` of `x` negative returns zero.
   - `cbrt` of `x` nexative integer returns `-cbrt(-x)`.
-  - <img src="https://render.githubusercontent.com/render/math?math=k^{th}"> root of `x` negative returns zero unless the cube root is being computed, in which case `-cbrt(-x)` is returned.
+  - $k^{th}$ root of `x` negative returns zero unless the cube root is being computed, in which case `-cbrt(-x)` is returned.
   - GCD of `a`, `b` signed converts both arguments to positive and negates the result for `a`, `b` having opposite signs.
-  - Miller-Rabin primality testing treats negative inetegers as positive when testing for prime, thus extending the set of primes <img src="https://render.githubusercontent.com/render/math?math=p\,\in\,\mathbb{Z}">.
+  - Miller-Rabin primality testing treats negative inetegers as positive when testing for prime, thus extending the set of primes to negative integers.
   - MSB/LSB (most/least significant bit) do not differentiate between positive or negative argument such that MSB of a negative integer will be the highest bit of the corresponding unsigned type.
   - Printing both positive-valued and negative-valued signed integers in hexadecimal format is supported. When printing negative-valued, signed  `uintwide_t` in hexadecimal format, the sign bit and all other bits are treated as if the integer were unsigned. The negative sign is not explicitly shown when using hexadecimal format, even if the underlying integer is signed and negative-valued. A potential positive sign, however, will be shown for positive-valued signed integers in hexadecimal form in the presence of `std::showpos`.
 
-### Conversion rules
+## Further details
 
-The following design choices have been implemented when implementing
-conversion rules.
+### Notable construction/conversion rules
 
-  - Construction-from built-in types is non-explicit (considered widening).
-  - Cast-to built-in types is explicit (considered narrowing).
-  - Construction-from, cast-to wider/less-wide/signed-unsigned wide-integer types is non-explicit (even if the conversoin is narrowing via having fewer bits).
-  - All wide-integer-types are move constructible.
-  - All wide-integer types having same widths and having the same limb-type, but possibly different sign are move-assignable.
+The following notable construction/conversion rules have been implemented
+in the wide-integer project.
+
+  - Constructions-from built-in types are implicit. These are considered widening conversions.
+  - Casts to built-in types are explicit and considered narrowing, regardless of the widths of left-and-right hand sides of the conversion.
+  - All of both constructions-from as well as casts-to wider/less-wide and signed/unsigned wide-integer types are implicit (even if the conversion at hand is narrowing via having fewer bits). Casts such as `int128_t` to/from `uint160_t` and similar, for instance, are implicit.
+  - All wide-integer-types are move constructable.
+  - All wide-integer types having the same widths and having the same limb-type (but possibly different sign) are move-assignable and `std::move()`-capable.
+
+### Importing and exporting bits
+
+Support for importing and exporting bits is granted by the subroutines
+`import_bits()` and `export_bits()`. Their interfaces, input/output forms
+and constraints are intended to be identical with those used in
+[Boost's import/export-bits functions](https://www.boost.org/doc/libs/1_80_0/libs/multiprecision/doc/html/boost_multiprecision/tut/import_export.html).
+
+### Alternatives and limitations
+
+Alternative libraries for big integral types include,
+among others, most notably
+[GMP](https://gmplib.org/)
+and
+[`Boost.Multiprecision`](https://www.boost.org/doc/libs/1_79_0/libs/multiprecision/doc/html/index.html).
+
+At the moment, the digit range of wide-integer is limited
+to the granularity of the full limb type.
+This means that less-common bit counts
+requiring the use of non-full limbs
+are not supported. It is **not** possible with this library,
+for instance, to synthesize, let's say, a 61-bit integral type.
+
+This can have performance impact. If you would like
+to synthesize an 80-bit integral type, for example, this can
+be done, but at the cost of using five 16-bit limbs.
+This degrades performance due to the higher limb count.
+This phenomenon was discussed in
+[issue 234](https://github.com/ckormanyos/wide-integer/issues/234)

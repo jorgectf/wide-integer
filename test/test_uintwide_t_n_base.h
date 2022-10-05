@@ -12,6 +12,21 @@
   #include <random>
   #include <sstream>
 
+  #include <boost/version.hpp>
+
+  #if !defined(BOOST_VERSION)
+  #error BOOST_VERSION is not defined. Ensure that <boost/version.hpp> is properly included.
+  #endif
+
+  #if ((BOOST_VERSION >= 107900) && !defined(BOOST_MP_STANDALONE))
+  #define BOOST_MP_STANDALONE
+  #endif
+
+  #if ((BOOST_VERSION >= 108000) && !defined(BOOST_NO_EXCEPTIONS))
+  #define BOOST_NO_EXCEPTIONS
+  #endif
+
+  #if (BOOST_VERSION < 108000)
   #if defined(__GNUC__)
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wconversion"
@@ -20,10 +35,18 @@
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wunused-parameter"
   #endif
+  #endif
 
+  #if (defined(__GNUC__) && !defined(__clang__) && (__GNUC__ >= 12))
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wrestrict"
+  #endif
+
+  #if (BOOST_VERSION < 108000)
   #if (defined(__clang__) && (__clang_major__ > 9)) && !defined(__APPLE__)
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wdeprecated-copy"
+  #endif
   #endif
 
   #include <boost/multiprecision/cpp_int.hpp>
@@ -41,13 +64,13 @@
     virtual auto get_digits2() const -> WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t = 0;
     #else
     WIDE_INTEGER_NODISCARD
-    virtual auto get_digits2() const -> math::wide_integer::size_t = 0;
+    virtual auto get_digits2() const -> ::math::wide_integer::size_t = 0;
     #endif
 
     WIDE_INTEGER_NODISCARD
     auto size() const -> std::size_t { return number_of_cases; }
 
-    virtual void initialize() = 0;
+    virtual auto initialize() -> void = 0;
 
     test_uintwide_t_n_base() = delete;
 
@@ -89,9 +112,9 @@
     template<typename OtherLocalUintType,
              typename OtherBoostUintType,
              typename AllocatorType = void>
-    static void get_equal_random_test_values_boost_and_local_n(OtherLocalUintType* u_local,
-                                                               OtherBoostUintType* u_boost,
-                                                               const std::size_t count)
+    static auto get_equal_random_test_values_boost_and_local_n(      OtherLocalUintType* u_local,
+                                                                     OtherBoostUintType* u_boost,
+                                                               const std::size_t         count) -> void
     {
       using other_local_uint_type = OtherLocalUintType;
       using other_boost_uint_type = OtherBoostUintType;
@@ -103,7 +126,7 @@
         WIDE_INTEGER_NAMESPACE::math::wide_integer::uniform_int_distribution<other_local_uint_type::my_width2, typename other_local_uint_type::limb_type, AllocatorType>;
       #else
       using distribution_type =
-        math::wide_integer::uniform_int_distribution<other_local_uint_type::my_width2, typename other_local_uint_type::limb_type, AllocatorType>;
+        ::math::wide_integer::uniform_int_distribution<other_local_uint_type::my_width2, typename other_local_uint_type::limb_type, AllocatorType>;
       #endif
 
       distribution_type distribution;
@@ -130,14 +153,22 @@
     const std::size_t number_of_cases;
   };
 
+  #if (BOOST_VERSION < 108000)
   #if (defined(__clang__) && (__clang_major__ > 9)) && !defined(__APPLE__)
   #pragma GCC diagnostic pop
   #endif
+  #endif
 
+  #if (defined(__GNUC__) && !defined(__clang__) && (__GNUC__ >= 12))
+  #pragma GCC diagnostic pop
+  #endif
+
+  #if (BOOST_VERSION < 108000)
   #if defined(__GNUC__)
   #pragma GCC diagnostic pop
   #pragma GCC diagnostic pop
   #pragma GCC diagnostic pop
+  #endif
   #endif
 
 #endif // TEST_UINTWIDE_T_N_BASE_2019_12_29_H

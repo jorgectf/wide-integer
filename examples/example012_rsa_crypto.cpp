@@ -1,5 +1,5 @@
-///////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2021.                        //
+﻿///////////////////////////////////////////////////////////////////
+//  Copyright Christopher Kormanyos 2021 - 2022.                 //
 //  Distributed under the Boost Software License,                //
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt          //
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)             //
@@ -28,7 +28,7 @@ namespace local_rsa
                                                                                   LimbType,
                                                                                   allocator_type>;
     #else
-    using my_uintwide_t  = math::wide_integer::uintwide_t<static_cast<math::wide_integer::size_t>(bit_count),
+    using my_uintwide_t  = ::math::wide_integer::uintwide_t<static_cast<math::wide_integer::size_t>(bit_count),
                                                           LimbType,
                                                           allocator_type>;
     #endif
@@ -40,23 +40,23 @@ namespace local_rsa
     #if defined(WIDE_INTEGER_NAMESPACE)
     using crypto_string  = WIDE_INTEGER_NAMESPACE::math::wide_integer::detail::dynamic_array<crypto_char, crypto_alloc>;
     #else
-    using crypto_string  = math::wide_integer::detail::dynamic_array<crypto_char, crypto_alloc>;
+    using crypto_string  = ::math::wide_integer::detail::dynamic_array<crypto_char, crypto_alloc>;
     #endif
 
-    typedef struct private_key_type // NOLINT(modernize-use-using)
-    {
-      my_uintwide_t s;
-      my_uintwide_t p;
-      my_uintwide_t q;
-    }
-    private_key_type;
+    using private_key_type =
+      struct
+      {
+        my_uintwide_t s;
+        my_uintwide_t p;
+        my_uintwide_t q;
+      };
 
-    typedef struct public_key_type // NOLINT(modernize-use-using)
-    {
-      my_uintwide_t r;
-      my_uintwide_t m;
-    }
-    public_key_type;
+    using public_key_type =
+      struct public_key_type
+      {
+        my_uintwide_t r;
+        my_uintwide_t m;
+      };
 
     virtual ~rsa_base() = default;
 
@@ -98,9 +98,9 @@ namespace local_rsa
 
       template<typename InputIterator,
                typename OutputIterator>
-      void encrypt(InputIterator in_first, const std::size_t count, OutputIterator out)
+      auto encrypt(InputIterator in_first, const std::size_t count, OutputIterator out) -> void
       {
-        for(auto it = in_first; it != in_first + typename std::iterator_traits<InputIterator>::difference_type(count); ++it)
+        for(auto it = in_first; it != in_first + typename std::iterator_traits<InputIterator>::difference_type(count); ++it) // NOLINT(altera-id-dependent-backward-branch)
         {
           *out++ = powm(my_uintwide_t(*it), public_key.r, public_key.m);
         }
@@ -117,11 +117,11 @@ namespace local_rsa
 
       template<typename InputIterator,
                typename OutputIterator>
-      void decrypt(InputIterator cry_in, const std::size_t count, OutputIterator cypher_out)
+      auto decrypt(InputIterator cry_in, const std::size_t count, OutputIterator cypher_out) -> void
       {
         InputIterator cry_end(cry_in + typename std::iterator_traits<InputIterator>::difference_type(count));
 
-        for(auto it = cry_in; it !=  cry_end; ++it)
+        for(auto it = cry_in; it !=  cry_end; ++it) // NOLINT(altera-id-dependent-backward-branch)
         {
           const my_uintwide_t tmp = powm(*it, private_key.s, private_key.q * private_key.p);
 
@@ -197,7 +197,7 @@ namespace local_rsa
 
     auto decrypt(const crypto_string& str) const -> std::string
     {
-      std::string res(str.size(), char('\0'));
+      std::string res(str.size(), '\0');
 
       decryptor(private_key).decrypt(str.cbegin(), str.size(), res.begin());
 
@@ -213,7 +213,7 @@ namespace local_rsa
         WIDE_INTEGER_NAMESPACE::math::wide_integer::uniform_int_distribution<WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t(bit_count), limb_type, allocator_type>;
       #else
       using local_distribution_type =
-        math::wide_integer::uniform_int_distribution<math::wide_integer::size_t(bit_count), limb_type, allocator_type>;
+        ::math::wide_integer::uniform_int_distribution<math::wide_integer::size_t(bit_count), limb_type, allocator_type>;
       #endif
 
       local_distribution_type distribution;
@@ -228,28 +228,25 @@ namespace local_rsa
     rsa_base() = delete;
 
   protected:
-    my_uintwide_t    my_p;        // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
-    my_uintwide_t    my_q;        // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
-    my_uintwide_t    my_r;        // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
-    my_uintwide_t    my_m;        // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
-    my_uintwide_t    phi_of_m;    // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
-    public_key_type  public_key;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
-    private_key_type private_key; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
+    my_uintwide_t    my_p;            // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
+    my_uintwide_t    my_q;            // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
+    my_uintwide_t    my_r;            // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
+    my_uintwide_t    my_m;            // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
+    my_uintwide_t    phi_of_m    { }; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
+    public_key_type  public_key  { }; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
+    private_key_type private_key { }; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes,readability-identifier-naming)
 
     rsa_base(my_uintwide_t p_in,
              my_uintwide_t q_in,
-             my_uintwide_t r_in) : my_p       (std::move(p_in)),
-                                   my_q       (std::move(q_in)),
-                                   my_r       (std::move(r_in)),
-                                   my_m       (my_p * my_q),
-                                   phi_of_m   (),
-                                   public_key (),
-                                   private_key()
+             my_uintwide_t r_in) : my_p(std::move(p_in)),
+                                   my_q(std::move(q_in)),
+                                   my_r(std::move(r_in)),
+                                   my_m(my_p * my_q)
     {
       public_key = public_key_type { my_r, my_m }; // NOLINT(cppcoreguidelines-prefer-member-initializer)
     }
 
-    void calculate_private_key()
+    auto calculate_private_key() -> void
     {
       my_uintwide_t a = phi_of_m;
       my_uintwide_t b = my_r;
@@ -276,7 +273,7 @@ namespace local_rsa
     {
       my_uintwide_t tmp = number;
 
-      while(is_neg(tmp))
+      while(is_neg(tmp)) // NOLINT(altera-id-dependent-backward-branch)
       {
         tmp += modulus;
       }
@@ -373,7 +370,7 @@ namespace local_rsa
 #if defined(WIDE_INTEGER_NAMESPACE)
 auto WIDE_INTEGER_NAMESPACE::math::wide_integer::example012_rsa_crypto() -> bool
 #else
-auto math::wide_integer::example012_rsa_crypto() -> bool
+auto ::math::wide_integer::example012_rsa_crypto() -> bool
 #endif
 {
   // Consider lines 25-30 in the file "KeyGen_186-3.rsp".
@@ -403,19 +400,19 @@ auto math::wide_integer::example012_rsa_crypto() -> bool
 
     const bool p_is_prime = rsa_type::is_prime(p, generator);
 
-    result_is_ok &= p_is_prime;
+    result_is_ok = (p_is_prime && result_is_ok);
   }
 
-  result_is_ok &= rsa_type::is_prime(q);
+  result_is_ok = (rsa_type::is_prime(q) && result_is_ok);
 
   const rsa_type rsa(p, q, e);
 
-  result_is_ok &= (   (rsa.get_p() == p)
+  result_is_ok = ((   (rsa.get_p() == p)
                    && (rsa.get_q() == q)
-                   && (rsa.get_d() == d));
+                   && (rsa.get_d() == d)) && result_is_ok);
 
-  result_is_ok &= (n == (p * q));
-  result_is_ok &= (n == rsa.get_n());
+  result_is_ok = ((n == (p * q)) && result_is_ok);
+  result_is_ok = ((n == rsa.get_n()) && result_is_ok);
 
   // Select "abc" as the sample string to encrypt.
   const std::string in_str("abc");
@@ -423,33 +420,35 @@ auto math::wide_integer::example012_rsa_crypto() -> bool
   const typename rsa_type::crypto_string out_str = rsa.encrypt(in_str);
   const std::string                     res_str = rsa.decrypt(out_str);
 
-  const char res_ch_a_manual = char(static_cast<typename rsa_integral_type::limb_type>(powm(out_str[0U], d, n)));
-  const char res_ch_b_manual = char(static_cast<typename rsa_integral_type::limb_type>(powm(out_str[1U], d, n)));
-  const char res_ch_c_manual = char(static_cast<typename rsa_integral_type::limb_type>(powm(out_str[2U], d, n)));
+  const auto res_ch_a_manual = static_cast<char>(static_cast<typename rsa_integral_type::limb_type>(powm(out_str[0U], d, n)));
+  const auto res_ch_b_manual = static_cast<char>(static_cast<typename rsa_integral_type::limb_type>(powm(out_str[1U], d, n)));
+  const auto res_ch_c_manual = static_cast<char>(static_cast<typename rsa_integral_type::limb_type>(powm(out_str[2U], d, n)));
 
-  result_is_ok &= (res_str         == "abc");
-  result_is_ok &= (res_ch_a_manual == char('a'));
-  result_is_ok &= (res_ch_b_manual == char('b'));
-  result_is_ok &= (res_ch_c_manual == char('c'));
+  result_is_ok = ((res_str         == "abc") && result_is_ok);
+  result_is_ok = ((res_ch_a_manual == 'a')   && result_is_ok);
+  result_is_ok = ((res_ch_b_manual == 'b')   && result_is_ok);
+  result_is_ok = ((res_ch_c_manual == 'c')   && result_is_ok);
 
   return result_is_ok;
 }
 
 // Enable this if you would like to activate this main() as a standalone example.
-#if 0
+#if defined(WIDE_INTEGER_STANDALONE_EXAMPLE012_RSA_CRYPTO)
 
 #include <iomanip>
 #include <iostream>
 
-int main()
+auto main() -> int
 {
   #if defined(WIDE_INTEGER_NAMESPACE)
-  const bool result_is_ok = WIDE_INTEGER_NAMESPACE::wide_integer::example012_rsa_crypto();
+  const auto result_is_ok = WIDE_INTEGER_NAMESPACE::math::wide_integer::example012_rsa_crypto();
   #else
-  const bool result_is_ok = wide_integer::example012_rsa_crypto();
+  const auto result_is_ok = ::math::wide_integer::example012_rsa_crypto();
   #endif
 
   std::cout << "result_is_ok: " << std::boolalpha << result_is_ok << std::endl;
+
+  return (result_is_ok ? 0 : -1);
 }
 
 #endif

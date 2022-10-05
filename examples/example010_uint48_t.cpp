@@ -13,19 +13,19 @@
 #if defined(WIDE_INTEGER_NAMESPACE)
 auto WIDE_INTEGER_NAMESPACE::math::wide_integer::example010_uint48_t() -> bool
 #else
-auto math::wide_integer::example010_uint48_t() -> bool
+auto ::math::wide_integer::example010_uint48_t() -> bool
 #endif
 {
   #if defined(WIDE_INTEGER_NAMESPACE)
   using uint48_t = WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<static_cast<WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t>(UINT32_C(48)), std::uint8_t>;
   #else
-  using uint48_t = math::wide_integer::uintwide_t<static_cast<math::wide_integer::size_t>(UINT32_C(48)), std::uint8_t>;
+  using uint48_t = ::math::wide_integer::uintwide_t<static_cast<math::wide_integer::size_t>(UINT32_C(48)), std::uint8_t>;
   #endif
 
   #if defined(WIDE_INTEGER_NAMESPACE)
-  using distribution_type  = math::wide_integer::uniform_int_distribution<static_cast<WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t>(UINT32_C(48)), typename uint48_t::limb_type>;
+  using distribution_type  = WIDE_INTEGER_NAMESPACE::math::wide_integer::uniform_int_distribution<static_cast<WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t>(UINT32_C(48)), typename uint48_t::limb_type>;
   #else
-  using distribution_type  = math::wide_integer::uniform_int_distribution<static_cast<math::wide_integer::size_t>(UINT32_C(48)), typename uint48_t::limb_type>;
+  using distribution_type  = ::math::wide_integer::uniform_int_distribution<static_cast<math::wide_integer::size_t>(UINT32_C(48)), typename uint48_t::limb_type>;
   #endif
 
   using random_engine_type = std::linear_congruential_engine<std::uint32_t, UINT32_C(48271), UINT32_C(0), UINT32_C(2147483647)>;
@@ -34,8 +34,8 @@ auto math::wide_integer::example010_uint48_t() -> bool
 
   distribution_type distribution;
 
-  const std::uint64_t a64 = static_cast<std::uint64_t>(distribution(generator));
-  const std::uint64_t b64 = static_cast<std::uint64_t>(distribution(generator));
+  const auto a64 = static_cast<std::uint64_t>(distribution(generator));
+  const auto b64 = static_cast<std::uint64_t>(distribution(generator));
 
   const uint48_t a(a64);
   const uint48_t b(b64);
@@ -45,7 +45,7 @@ auto math::wide_integer::example010_uint48_t() -> bool
   const uint48_t c_mul = (a * b);
   const uint48_t c_div = (a / b);
 
-  const bool result_is_ok = (   (   (c_add == ((a64 + b64) & 0x0000FFFFFFFFFFFFULL))
+  const auto result_is_ok = (   (   (c_add == ((a64 + b64) & 0x0000FFFFFFFFFFFFULL))
                                  && (c_sub == ((a64 - b64) & 0x0000FFFFFFFFFFFFULL))
                                  && (c_mul == ((a64 * b64) & 0x0000FFFFFFFFFFFFULL))
                                  && (c_div == ((a64 / b64) & 0x0000FFFFFFFFFFFFULL)))
@@ -59,20 +59,22 @@ auto math::wide_integer::example010_uint48_t() -> bool
 }
 
 // Enable this if you would like to activate this main() as a standalone example.
-#if 0
+#if defined(WIDE_INTEGER_STANDALONE_EXAMPLE010_UINT48_T)
 
 #include <iomanip>
 #include <iostream>
 
-int main()
+auto main() -> int
 {
   #if defined(WIDE_INTEGER_NAMESPACE)
-  const bool result_is_ok = WIDE_INTEGER_NAMESPACE::wide_integer::example010_uint48_t();
+  const auto result_is_ok = WIDE_INTEGER_NAMESPACE::math::wide_integer::example010_uint48_t();
   #else
-  const bool result_is_ok = wide_integer::example010_uint48_t();
+  const auto result_is_ok = ::math::wide_integer::example010_uint48_t();
   #endif
 
   std::cout << "result_is_ok: " << std::boolalpha << result_is_ok << std::endl;
+
+  return (result_is_ok ? 0 : -1);
 }
 
 #endif

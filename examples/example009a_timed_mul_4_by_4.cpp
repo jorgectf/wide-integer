@@ -23,7 +23,7 @@ namespace local_timed_mul_4_by_4
 {
   template<typename UnsignedIntegralIteratorType,
            typename RandomEngineType>
-  void get_random_big_uint(RandomEngineType& rng, UnsignedIntegralIteratorType it_out)
+  auto get_random_big_uint(RandomEngineType& rng, UnsignedIntegralIteratorType it_out) -> void
   {
     using local_uint_type = typename std::iterator_traits<UnsignedIntegralIteratorType>::value_type;
 
@@ -32,7 +32,7 @@ namespace local_timed_mul_4_by_4
       WIDE_INTEGER_NAMESPACE::math::wide_integer::uniform_int_distribution<std::numeric_limits<local_uint_type>::digits, typename local_uint_type::limb_type>;
     #else
     using distribution_type =
-      math::wide_integer::uniform_int_distribution<std::numeric_limits<local_uint_type>::digits, typename local_uint_type::limb_type>;
+      ::math::wide_integer::uniform_int_distribution<std::numeric_limits<local_uint_type>::digits, typename local_uint_type::limb_type>;
     #endif
 
     distribution_type distribution;
@@ -43,7 +43,7 @@ namespace local_timed_mul_4_by_4
   #if defined(WIDE_INTEGER_NAMESPACE)
   using big_uint_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<static_cast<WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t>(UINT32_C(128))>;
   #else
-  using big_uint_type = math::wide_integer::uintwide_t<static_cast<math::wide_integer::size_t>(UINT32_C(128))>;
+  using big_uint_type = ::math::wide_integer::uintwide_t<static_cast<math::wide_integer::size_t>(UINT32_C(128))>;
   #endif
 
   auto local_a() -> std::vector<big_uint_type>&
@@ -68,7 +68,7 @@ namespace local_timed_mul_4_by_4
 #if defined(WIDE_INTEGER_NAMESPACE)
 auto WIDE_INTEGER_NAMESPACE::math::wide_integer::example009a_timed_mul_4_by_4() -> bool
 #else
-auto math::wide_integer::example009a_timed_mul_4_by_4() -> bool
+auto ::math::wide_integer::example009a_timed_mul_4_by_4() -> bool
 #endif
 {
   using random_engine_type =
@@ -118,33 +118,41 @@ auto math::wide_integer::example009a_timed_mul_4_by_4() -> bool
 
   const float kops_per_sec = float(count) / float(static_cast<std::uint32_t>(total_time));
 
-  std::cout << "bits: "
-            << std::numeric_limits<local_timed_mul_4_by_4::big_uint_type>::digits
-            << ", kops_per_sec: "
-            << std::fixed
-            << std::setprecision(2)
-            << kops_per_sec
-            << ", count: "
-            << count
-            << std::endl;
+  {
+    const auto flg = std::cout.flags();
 
-  const bool result_is_ok = (kops_per_sec > (std::numeric_limits<float>::min)());
+    std::cout << "bits: "
+              << std::numeric_limits<local_timed_mul_4_by_4::big_uint_type>::digits
+              << ", kops_per_sec: "
+              << std::fixed
+              << std::setprecision(2)
+              << kops_per_sec
+              << ", count: "
+              << count
+              << std::endl;
+
+    std::cout.flags(flg);
+  }
+
+  const auto result_is_ok = (kops_per_sec > (std::numeric_limits<float>::min)());
 
   return result_is_ok;
 }
 
 // Enable this if you would like to activate this main() as a standalone example.
-#if 0
+#if defined(WIDE_INTEGER_STANDALONE_EXAMPLE009A_TIMED_MUL_4_BY_4)
 
-int main()
+auto main() -> int
 {
   #if defined(WIDE_INTEGER_NAMESPACE)
-  const bool result_is_ok = WIDE_INTEGER_NAMESPACE::wide_integer::example009a_timed_mul_4_by_4();
+  const auto result_is_ok = WIDE_INTEGER_NAMESPACE::math::wide_integer::example009a_timed_mul_4_by_4();
   #else
-  const bool result_is_ok = wide_integer::example009a_timed_mul_4_by_4();
+  const auto result_is_ok = ::math::wide_integer::example009a_timed_mul_4_by_4();
   #endif
 
   std::cout << "result_is_ok: " << std::boolalpha << result_is_ok << std::endl;
+
+  return (result_is_ok ? 0 : -1);
 }
 
 #endif

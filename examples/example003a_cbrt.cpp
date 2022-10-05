@@ -13,13 +13,13 @@
 #if defined(WIDE_INTEGER_NAMESPACE)
 auto WIDE_INTEGER_NAMESPACE::math::wide_integer::example003a_cbrt() -> bool
 #else
-auto math::wide_integer::example003a_cbrt() -> bool
+auto ::math::wide_integer::example003a_cbrt() -> bool
 #endif
 {
   #if defined(WIDE_INTEGER_NAMESPACE)
-  using uint11264_t = math::wide_integer::uintwide_t<static_cast<WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t>(UINT32_C(11264)), std::uint32_t, std::allocator<std::uint32_t>>;
+  using uint11264_t = WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<static_cast<WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t>(UINT32_C(11264)), std::uint32_t, std::allocator<std::uint32_t>>;
   #else
-  using uint11264_t = math::wide_integer::uintwide_t<static_cast<math::wide_integer::size_t>(UINT32_C(11264)), std::uint32_t, std::allocator<std::uint32_t>>;
+  using uint11264_t = ::math::wide_integer::uintwide_t<static_cast<math::wide_integer::size_t>(UINT32_C(11264)), std::uint32_t, std::allocator<std::uint32_t>>;
   #endif
 
   // Create the string '1' + 3,333 times '0', which is
@@ -37,26 +37,28 @@ auto math::wide_integer::example003a_cbrt() -> bool
 
   const std::string str_control = "1" + std::string(1111U, '0');
 
-  const bool result_is_ok = (s == uint11264_t(str_control.data()));
+  const auto result_is_ok = (s == uint11264_t(str_control.data()));
 
   return result_is_ok;
 }
 
 // Enable this if you would like to activate this main() as a standalone example.
-#if 0
+#if defined(WIDE_INTEGER_STANDALONE_EXAMPLE003A_CBRT)
 
 #include <iomanip>
 #include <iostream>
 
-int main()
+auto main() -> int
 {
   #if defined(WIDE_INTEGER_NAMESPACE)
-  const bool result_is_ok = WIDE_INTEGER_NAMESPACE::wide_integer::example003a_cbrt();
+  const auto result_is_ok = WIDE_INTEGER_NAMESPACE::math::wide_integer::example003a_cbrt();
   #else
-  const bool result_is_ok = wide_integer::example003a_cbrt();
+  const auto result_is_ok = ::math::wide_integer::example003a_cbrt();
   #endif
 
   std::cout << "result_is_ok: " << std::boolalpha << result_is_ok << std::endl;
+
+  return (result_is_ok ? 0 : -1);
 }
 
 #endif

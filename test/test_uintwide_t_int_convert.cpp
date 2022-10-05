@@ -1,5 +1,5 @@
-///////////////////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2021.
+﻿///////////////////////////////////////////////////////////////////////////////
+//  Copyright Christopher Kormanyos 2021 - 2022.
 //  Distributed under the Boost Software License,
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -11,6 +11,32 @@
 #include <sstream>
 #include <string>
 
+#include <boost/version.hpp>
+
+#if !defined(BOOST_VERSION)
+#error BOOST_VERSION is not defined. Ensure that <boost/version.hpp> is properly included.
+#endif
+
+#if ((BOOST_VERSION >= 107900) && !defined(BOOST_MP_STANDALONE))
+#define BOOST_MP_STANDALONE
+#endif
+
+#if ((BOOST_VERSION >= 108000) && !defined(BOOST_NO_EXCEPTIONS))
+#define BOOST_NO_EXCEPTIONS
+#endif
+
+#if (((BOOST_VERSION == 108000) || (BOOST_VERSION == 108100)) && defined(BOOST_NO_EXCEPTIONS))
+#if defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsometimes-uninitialized"
+#endif
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4701)
+#endif
+#endif
+
+#if (BOOST_VERSION < 108000)
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
@@ -19,10 +45,18 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
+#endif
 
+#if (defined(__GNUC__) && !defined(__clang__) && (__GNUC__ >= 12))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wrestrict"
+#endif
+
+#if (BOOST_VERSION < 108000)
 #if (defined(__clang__) && (__clang_major__ > 9)) && !defined(__APPLE__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
+#endif
 #endif
 
 #include <boost/multiprecision/cpp_int.hpp>
@@ -38,15 +72,15 @@ namespace local_int_convert
 
   template<const std::size_t MaxDigitsToGet,
            const std::size_t MinDigitsToGet = 2U>
-  auto get_random_digit_string(std::string& str) -> void
+  auto get_random_digit_string(std::string& str) -> void // NOLINT(google-runtime-references)
   {
     static_assert(MinDigitsToGet >=  2U, "Error: The minimum number of digits to get must be  2 or more");
 
     static std::uniform_int_distribution<unsigned>
     dist_sgn
     (
-      0,
-      1
+      static_cast<unsigned>(UINT8_C(0)),
+      static_cast<unsigned>(UINT8_C(1))
     );
 
     static std::uniform_int_distribution<unsigned>
@@ -59,15 +93,15 @@ namespace local_int_convert
     static std::uniform_int_distribution<unsigned>
     dist_first
     (
-      1,
-      9  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      static_cast<unsigned>(UINT8_C(1)),
+      static_cast<unsigned>(UINT8_C(9))
     );
 
     static std::uniform_int_distribution<unsigned>
     dist_following
     (
-      0,
-      9  // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+      static_cast<unsigned>(UINT8_C(0)),
+      static_cast<unsigned>(UINT8_C(9))
     );
 
     const bool is_neg = (dist_sgn(engine_sgn()) != 0);
@@ -80,7 +114,7 @@ namespace local_int_convert
     {
       str.resize(len + 1U);
 
-      str.at(pos) = char('-');
+      str.at(pos) = '-';
 
       ++pos;
     }
@@ -125,7 +159,7 @@ namespace local_int_convert
 #if defined(WIDE_INTEGER_NAMESPACE)
 auto WIDE_INTEGER_NAMESPACE::math::wide_integer::test_uintwide_t_int_convert() -> bool
 #else
-auto math::wide_integer::test_uintwide_t_int_convert() -> bool
+auto ::math::wide_integer::test_uintwide_t_int_convert() -> bool
 #endif
 {
   constexpr auto digits2 = unsigned(256U);
@@ -143,7 +177,11 @@ auto math::wide_integer::test_uintwide_t_int_convert() -> bool
   using local_limb_type = std::uint32_t;
   #endif
 
-  using local_sint_type = math::wide_integer::uintwide_t<digits2, local_limb_type, void, true>;
+  #if defined(WIDE_INTEGER_NAMESPACE)
+  using local_sint_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<digits2, local_limb_type, void, true>;
+  #else
+  using local_sint_type = ::math::wide_integer::uintwide_t<digits2, local_limb_type, void, true>;
+  #endif
 
   local_int_convert::engine_val().seed(static_cast<typename std::mt19937::result_type>                                                        (std::clock()));
   local_int_convert::engine_sgn().seed(static_cast<typename std::ranlux24_base::result_type>                                                  (std::clock()));
@@ -151,32 +189,51 @@ auto math::wide_integer::test_uintwide_t_int_convert() -> bool
 
   bool result_is_ok = true;
 
-  for(auto i = static_cast<std::size_t>(UINT32_C(0)); i < static_cast<std::size_t>(UINT32_C(0x100000)); ++i)
+  for(auto   i = static_cast<std::size_t>(UINT32_C(0));
+             i < static_cast<std::size_t>(UINT32_C(0x100000));
+           ++i)
   {
     std::string str_digits;
 
     local_int_convert::get_random_digit_string<static_cast<std::size_t>(UINT32_C(18)), static_cast<std::size_t>(UINT32_C(2))>(str_digits);
 
-    const boost_sint_type n_boost = boost_sint_type(str_digits.c_str());
-    const local_sint_type n_local = local_sint_type(str_digits.c_str());
+    const auto n_boost = boost_sint_type(str_digits.c_str());
+    const auto n_local = local_sint_type(str_digits.c_str());
 
     const auto n_ctrl_boost = static_cast<std::int64_t>(n_boost);
     const auto n_ctrl_local = static_cast<std::int64_t>(n_local);
 
     const bool result_n_is_ok = (n_ctrl_boost == n_ctrl_local);
 
-    result_is_ok &= result_n_is_ok;
+    result_is_ok = (result_n_is_ok && result_is_ok);
   }
 
   return result_is_ok;
 }
 
+#if (BOOST_VERSION < 108000)
 #if (defined(__clang__) && (__clang_major__ > 9)) && !defined(__APPLE__)
 #pragma GCC diagnostic pop
 #endif
+#endif
 
+#if (defined(__GNUC__) && !defined(__clang__) && (__GNUC__ >= 12))
+#pragma GCC diagnostic pop
+#endif
+
+#if (BOOST_VERSION < 108000)
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
+#endif
+#endif
+
+#if (((BOOST_VERSION == 108000) || (BOOST_VERSION == 108100)) && defined(BOOST_NO_EXCEPTIONS))
+#if defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 #endif

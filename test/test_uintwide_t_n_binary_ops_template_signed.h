@@ -1,5 +1,5 @@
-///////////////////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2021.
+﻿///////////////////////////////////////////////////////////////////////////////
+//  Copyright Christopher Kormanyos 2021 - 2022.
 //  Distributed under the Boost Software License,
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -21,7 +21,7 @@
            typename MyLimbType = std::uint32_t,
            typename AllocatorType = void>
   #else
-  template<const math::wide_integer::size_t MyDigits2,
+  template<const ::math::wide_integer::size_t MyDigits2,
            typename MyLimbType = std::uint32_t,
            typename AllocatorType = void>
   #endif
@@ -34,14 +34,23 @@
     static constexpr auto digits2 = static_cast<math::wide_integer::size_t>(MyDigits2);
     #endif
 
+    using boost_uint_backend_allocator_type = void;
+
     using boost_uint_backend_type =
       boost::multiprecision::cpp_int_backend<digits2,
                                              digits2,
-                                             boost::multiprecision::unsigned_magnitude>;
+                                             boost::multiprecision::unsigned_magnitude,
+                                             boost::multiprecision::unchecked,
+                                             boost_uint_backend_allocator_type>;
+
+    using boost_sint_backend_allocator_type = void;
+
     using boost_sint_backend_type =
       boost::multiprecision::cpp_int_backend<digits2,
                                              digits2,
-                                             boost::multiprecision::signed_magnitude>;
+                                             boost::multiprecision::signed_magnitude,
+                                             boost::multiprecision::unchecked,
+                                             boost_sint_backend_allocator_type>;
 
     using boost_uint_type = boost::multiprecision::number<boost_uint_backend_type, boost::multiprecision::et_on>;
     using boost_sint_type = boost::multiprecision::number<boost_sint_backend_type, boost::multiprecision::et_on>;
@@ -52,28 +61,20 @@
     using local_uint_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<digits2, local_limb_type, AllocatorType>;
     using local_sint_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<digits2, local_limb_type, AllocatorType, true>;
     #else
-    using local_uint_type = math::wide_integer::uintwide_t<digits2, local_limb_type, AllocatorType>;
-    using local_sint_type = math::wide_integer::uintwide_t<digits2, local_limb_type, AllocatorType, true>;
+    using local_uint_type = ::math::wide_integer::uintwide_t<digits2, local_limb_type, AllocatorType>;
+    using local_sint_type = ::math::wide_integer::uintwide_t<digits2, local_limb_type, AllocatorType, true>;
     #endif
 
   public:
     explicit test_uintwide_t_n_binary_ops_template_signed(const std::size_t count)
-      : test_uintwide_t_n_binary_ops_base(count),
-        a_local       (),
-        b_local       (),
-        a_local_signed(),
-        b_local_signed(),
-        a_boost       (),
-        b_boost       (),
-        a_boost_signed(),
-        b_boost_signed() { }
+      : test_uintwide_t_n_binary_ops_base(count) { }
 
     ~test_uintwide_t_n_binary_ops_template_signed() override = default;
 
     #if defined(WIDE_INTEGER_NAMESPACE)
     WIDE_INTEGER_NODISCARD auto get_digits2() const -> WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t override { return digits2; }
     #else
-    WIDE_INTEGER_NODISCARD auto get_digits2() const -> math::wide_integer::size_t override { return digits2; }
+    WIDE_INTEGER_NODISCARD auto get_digits2() const -> ::math::wide_integer::size_t override { return digits2; }
     #endif
 
     auto initialize() -> void override
@@ -108,7 +109,7 @@
       std::copy(b_boost.cbegin(), b_boost.cend(), b_boost_signed.begin());
     }
 
-    WIDE_INTEGER_NODISCARD auto test_binary_add() const -> bool override
+    WIDE_INTEGER_NODISCARD auto test_binary_add() const -> bool
     {
       bool result_is_ok = true;
 
@@ -127,7 +128,7 @@
           const std::string str_local_signed = hexlexical_cast(static_cast<local_uint_type>(c_local_signed));
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (str_boost_signed == str_local_signed);
+          result_is_ok = ((str_boost_signed == str_local_signed) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -135,7 +136,7 @@
       return result_is_ok;
     }
 
-    WIDE_INTEGER_NODISCARD auto test_binary_sub() const -> bool override
+    WIDE_INTEGER_NODISCARD auto test_binary_sub() const -> bool
     {
       bool result_is_ok = true;
 
@@ -154,7 +155,7 @@
           const std::string str_local_signed = hexlexical_cast(static_cast<local_uint_type>(c_local_signed));
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (str_boost_signed == str_local_signed);
+          result_is_ok = ((str_boost_signed == str_local_signed) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -162,7 +163,7 @@
       return result_is_ok;
     }
 
-    WIDE_INTEGER_NODISCARD auto test_binary_mul() const -> bool override
+    WIDE_INTEGER_NODISCARD auto test_binary_mul() const -> bool
     {
       bool result_is_ok = true;
 
@@ -181,7 +182,7 @@
           const std::string str_local_signed = hexlexical_cast(static_cast<local_uint_type>(c_local_signed));
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (str_boost_signed == str_local_signed);
+          result_is_ok = ((str_boost_signed == str_local_signed) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -189,7 +190,7 @@
       return result_is_ok;
     }
 
-    WIDE_INTEGER_NODISCARD auto test_binary_div() const -> bool override
+    WIDE_INTEGER_NODISCARD auto test_binary_div() const -> bool
     {
       bool result_is_ok = true;
 
@@ -208,7 +209,7 @@
           const std::string str_local_signed = hexlexical_cast(static_cast<local_uint_type>(c_local_signed));
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (str_boost_signed == str_local_signed);
+          result_is_ok = ((str_boost_signed == str_local_signed) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -216,7 +217,7 @@
       return result_is_ok;
     }
 
-    WIDE_INTEGER_NODISCARD auto test_binary_mod() const -> bool override
+    WIDE_INTEGER_NODISCARD auto test_binary_mod() const -> bool
     {
       bool result_is_ok = true;
 
@@ -235,7 +236,7 @@
           const std::string str_local_signed = hexlexical_cast(static_cast<local_uint_type>(c_local_signed));
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (str_boost_signed == str_local_signed);
+          result_is_ok = ((str_boost_signed == str_local_signed) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -243,7 +244,7 @@
       return result_is_ok;
     }
 
-    auto do_test(const std::size_t rounds) -> bool override
+    auto do_test(std::size_t rounds) -> bool override
     {
       bool result_is_ok = true;
 
@@ -253,34 +254,34 @@
         this->initialize();
 
         std::cout << "test_binary_add()  boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_add();
+        result_is_ok = (test_binary_add() && result_is_ok);
 
         std::cout << "test_binary_sub()  boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_sub();
+        result_is_ok = (test_binary_sub() && result_is_ok);
 
         std::cout << "test_binary_mul()  boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_mul();
+        result_is_ok = (test_binary_mul() && result_is_ok);
 
         std::cout << "test_binary_div()  boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_div();
+        result_is_ok = (test_binary_div() && result_is_ok);
 
         std::cout << "test_binary_mod()  boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_mod();
+        result_is_ok = (test_binary_mod() && result_is_ok);
       }
 
       return result_is_ok;
     }
 
   private:
-    std::vector<local_uint_type> a_local;        // NOLINT(readability-identifier-naming)
-    std::vector<local_uint_type> b_local;        // NOLINT(readability-identifier-naming)
-    std::vector<local_sint_type> a_local_signed; // NOLINT(readability-identifier-naming)
-    std::vector<local_sint_type> b_local_signed; // NOLINT(readability-identifier-naming)
+    std::vector<local_uint_type> a_local { };        // NOLINT(readability-identifier-naming)
+    std::vector<local_uint_type> b_local { };        // NOLINT(readability-identifier-naming)
+    std::vector<local_sint_type> a_local_signed { }; // NOLINT(readability-identifier-naming)
+    std::vector<local_sint_type> b_local_signed { }; // NOLINT(readability-identifier-naming)
 
-    std::vector<boost_uint_type> a_boost;        // NOLINT(readability-identifier-naming)
-    std::vector<boost_uint_type> b_boost;        // NOLINT(readability-identifier-naming)
-    std::vector<boost_sint_type> a_boost_signed; // NOLINT(readability-identifier-naming)
-    std::vector<boost_sint_type> b_boost_signed; // NOLINT(readability-identifier-naming)
+    std::vector<boost_uint_type> a_boost { };        // NOLINT(readability-identifier-naming)
+    std::vector<boost_uint_type> b_boost { };        // NOLINT(readability-identifier-naming)
+    std::vector<boost_sint_type> a_boost_signed { }; // NOLINT(readability-identifier-naming)
+    std::vector<boost_sint_type> b_boost_signed { }; // NOLINT(readability-identifier-naming)
   };
 
 
@@ -308,24 +309,20 @@
     using local_uint_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<digits2, local_limb_type, AllocatorType>;
     using local_sint_type = WIDE_INTEGER_NAMESPACE::math::wide_integer::uintwide_t<digits2, local_limb_type, AllocatorType, true>;
     #else
-    using local_uint_type = math::wide_integer::uintwide_t<digits2, local_limb_type, AllocatorType>;
-    using local_sint_type = math::wide_integer::uintwide_t<digits2, local_limb_type, AllocatorType, true>;
+    using local_uint_type = ::math::wide_integer::uintwide_t<digits2, local_limb_type, AllocatorType>;
+    using local_sint_type = ::math::wide_integer::uintwide_t<digits2, local_limb_type, AllocatorType, true>;
     #endif
 
   public:
     explicit test_uintwide_t_n_binary_ops_template_signed(const std::size_t count)
-      : test_uintwide_t_n_binary_ops_base(count),
-        a_local_signed (),
-        b_local_signed (),
-        a_native_signed(),    // NOLINT(readability-redundant-member-init)
-        b_native_signed() { } // NOLINT(readability-redundant-member-init)
+      : test_uintwide_t_n_binary_ops_base(count) { }
 
     ~test_uintwide_t_n_binary_ops_template_signed() override = default;
 
     #if defined(WIDE_INTEGER_NAMESPACE)
     WIDE_INTEGER_NODISCARD auto get_digits2() const -> WIDE_INTEGER_NAMESPACE::math::wide_integer::size_t override { return digits2; }
     #else
-    WIDE_INTEGER_NODISCARD auto get_digits2() const -> math::wide_integer::size_t override { return digits2; }
+    WIDE_INTEGER_NODISCARD auto get_digits2() const -> ::math::wide_integer::size_t override { return digits2; }
     #endif
 
     auto initialize() -> void override
@@ -351,12 +348,12 @@
         a_native_signed[i] = static_cast<std::int64_t>(dst_u64(eng64));
         b_native_signed[i] = static_cast<std::int64_t>(dst_u64(eng64));
 
-        a_local_signed[i] = local_sint_type(local_uint_type(a_native_signed[i]));
-        b_local_signed[i] = local_sint_type(local_uint_type(b_native_signed[i]));
+        a_local_signed[i] = static_cast<local_sint_type>(a_native_signed[i]);
+        b_local_signed[i] = static_cast<local_sint_type>(b_native_signed[i]);
       }
     }
 
-    WIDE_INTEGER_NODISCARD auto test_binary_add() const -> bool override
+    WIDE_INTEGER_NODISCARD auto test_binary_add() const -> bool
     {
       bool result_is_ok = true;
 
@@ -380,7 +377,7 @@
           const std::string str_local_signed  = declexical_cast(c_local_signed);
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (str_native_signed == str_local_signed);
+          result_is_ok = ((str_native_signed == str_local_signed) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -388,7 +385,7 @@
       return result_is_ok;
     }
 
-    WIDE_INTEGER_NODISCARD auto test_binary_sub() const -> bool override
+    WIDE_INTEGER_NODISCARD auto test_binary_sub() const -> bool
     {
       bool result_is_ok = true;
 
@@ -412,7 +409,7 @@
           const std::string str_local_signed  = declexical_cast(c_local_signed);
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (str_native_signed == str_local_signed);
+          result_is_ok = ((str_native_signed == str_local_signed) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -420,7 +417,7 @@
       return result_is_ok;
     }
 
-    WIDE_INTEGER_NODISCARD auto test_binary_mul() const -> bool override
+    WIDE_INTEGER_NODISCARD auto test_binary_mul() const -> bool
     {
       bool result_is_ok = true;
 
@@ -444,7 +441,7 @@
           const std::string str_local_signed  = declexical_cast(c_local_signed);
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (str_native_signed == str_local_signed);
+          result_is_ok = ((str_native_signed == str_local_signed) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -452,7 +449,7 @@
       return result_is_ok;
     }
 
-    WIDE_INTEGER_NODISCARD auto test_binary_div() const -> bool override
+    WIDE_INTEGER_NODISCARD auto test_binary_div() const -> bool
     {
       bool result_is_ok = true;
 
@@ -471,7 +468,7 @@
           const std::string str_local_signed  = declexical_cast(c_local_signed);
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (str_native_signed == str_local_signed);
+          result_is_ok = ((str_native_signed == str_local_signed) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -479,7 +476,7 @@
       return result_is_ok;
     }
 
-    WIDE_INTEGER_NODISCARD auto test_binary_mod() const -> bool override
+    WIDE_INTEGER_NODISCARD auto test_binary_mod() const -> bool
     {
       bool result_is_ok = true;
 
@@ -498,7 +495,7 @@
           const std::string str_local_signed  = declexical_cast(c_local_signed);
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (str_native_signed == str_local_signed);
+          result_is_ok = ((str_native_signed == str_local_signed) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -528,7 +525,7 @@
           const auto c_l = static_cast<local_signed_limb_type>(a_local_signed [i] % u);
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= (c_n == c_l);
+          result_is_ok = ((c_n == c_l) && result_is_ok);
           test_lock.clear();
         }
       );
@@ -561,7 +558,7 @@
           const bool current_result_is_ok   = (current_result_is_zero || (c_native_signed == static_cast<std::int64_t>(c_local_signed)));
 
           while(test_lock.test_and_set()) { ; }
-          result_is_ok &= current_result_is_ok;
+          result_is_ok = (current_result_is_ok && result_is_ok);
           test_lock.clear();
         }
       );
@@ -569,7 +566,7 @@
       return result_is_ok;
     }
 
-    auto do_test(const std::size_t rounds) -> bool override
+    auto do_test(std::size_t rounds) -> bool override
     {
       bool result_is_ok = true;
 
@@ -579,25 +576,25 @@
         this->initialize();
 
         std::cout << "test_binary_add()  boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_add();
+        result_is_ok = (test_binary_add() && result_is_ok);
 
         std::cout << "test_binary_sub()  boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_sub();
+        result_is_ok = (test_binary_sub() && result_is_ok);
 
         std::cout << "test_binary_mul()  boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_mul();
+        result_is_ok = (test_binary_mul() && result_is_ok);
 
         std::cout << "test_binary_div()  boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_div();
+        result_is_ok = (test_binary_div() && result_is_ok);
 
         std::cout << "test_binary_mod()  boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_mod();
+        result_is_ok = (test_binary_mod() && result_is_ok);
 
         std::cout << "test_binary_mod1() boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_mod1();
+        result_is_ok = (test_binary_mod1() && result_is_ok);
 
         std::cout << "test_binary_shr()  boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_shr();
+        result_is_ok = (test_binary_shr() && result_is_ok);
       }
 
       return result_is_ok;
@@ -608,11 +605,11 @@
     static std::uniform_int_distribution<> my_distrib_0_to_63;     // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
     static std::uniform_int_distribution<> my_distrib_1_to_0xFFFF; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-    std::vector<local_sint_type> a_local_signed; // NOLINT(readability-identifier-naming)
-    std::vector<local_sint_type> b_local_signed; // NOLINT(readability-identifier-naming)
+    std::vector<local_sint_type> a_local_signed { }; // NOLINT(readability-identifier-naming)
+    std::vector<local_sint_type> b_local_signed { }; // NOLINT(readability-identifier-naming)
 
-    std::vector<native_sint_type> a_native_signed; // NOLINT(readability-identifier-naming)
-    std::vector<native_sint_type> b_native_signed; // NOLINT(readability-identifier-naming)
+    std::vector<native_sint_type> a_native_signed { }; // NOLINT(readability-identifier-naming)
+    std::vector<native_sint_type> b_native_signed { }; // NOLINT(readability-identifier-naming)
   };
 
   #if defined(WIDE_INTEGER_NAMESPACE)

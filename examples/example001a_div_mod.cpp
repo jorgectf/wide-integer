@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2018 -2021.                  //
+//  Copyright Christopher Kormanyos 2018 -2022.                  //
 //  Distributed under the Boost Software License,                //
 //  Version 1.0. (See accompanying file LICENSE_1_0.txt          //
 //  or copy at http://www.boost.org/LICENSE_1_0.txt)             //
@@ -11,10 +11,14 @@
 #if defined(WIDE_INTEGER_NAMESPACE)
 auto WIDE_INTEGER_NAMESPACE::math::wide_integer::example001a_div_mod() -> bool
 #else
-auto math::wide_integer::example001a_div_mod() -> bool
+auto ::math::wide_integer::example001a_div_mod() -> bool
 #endif
 {
-  using math::wide_integer::uint512_t;
+  #if defined(WIDE_INTEGER_NAMESPACE)
+  using WIDE_INTEGER_NAMESPACE::math::wide_integer::uint512_t;
+  #else
+  using ::math::wide_integer::uint512_t;
+  #endif
 
   // QuotientRemainder[698937339790347543053797400564366118744312537138445607919548628175822115805812983955794321304304417541511379093392776018867245622409026835324102460829431,100041341335406267530943777943625254875702684549707174207105689918734693139781]
   // {6986485091668619828842978360442127600954041171641881730123945989288792389271,100041341335406267530943777943625254875702684549707174207105689918734693139780}
@@ -36,20 +40,22 @@ auto math::wide_integer::example001a_div_mod() -> bool
 }
 
 // Enable this if you would like to activate this main() as a standalone example.
-#if 0
+#if defined(WIDE_INTEGER_STANDALONE_EXAMPLE001A_DIV_MOD)
 
 #include <iomanip>
 #include <iostream>
 
-int main()
+auto main() -> int
 {
   #if defined(WIDE_INTEGER_NAMESPACE)
-  const bool result_is_ok = WIDE_INTEGER_NAMESPACE::wide_integer::example001a_div_mod();
+  const auto result_is_ok = WIDE_INTEGER_NAMESPACE::math::wide_integer::example001a_div_mod();
   #else
-  const bool result_is_ok = wide_integer::example001a_div_mod();
+  const auto result_is_ok = ::math::wide_integer::example001a_div_mod();
   #endif
 
   std::cout << "result_is_ok: " << std::boolalpha << result_is_ok << std::endl;
+
+  return (result_is_ok ? 0 : -1);
 }
 
 #endif

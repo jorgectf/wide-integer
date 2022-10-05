@@ -31,43 +31,7 @@
 
     ~test_uintwide_t_n_binary_ops_base() override = default;
 
-    WIDE_INTEGER_NODISCARD virtual auto test_binary_add () const -> bool { return false; }
-    WIDE_INTEGER_NODISCARD virtual auto test_binary_sub () const -> bool { return false; }
-    WIDE_INTEGER_NODISCARD virtual auto test_binary_mul () const -> bool { return false; }
-    WIDE_INTEGER_NODISCARD virtual auto test_binary_div () const -> bool { return false; }
-    WIDE_INTEGER_NODISCARD virtual auto test_binary_mod () const -> bool { return false; }
-    WIDE_INTEGER_NODISCARD virtual auto test_binary_sqrt() const -> bool { return false; }
-
-    virtual auto do_test(const std::size_t rounds) -> bool
-    {
-      bool result_is_ok = true;
-
-      for(std::size_t i = 0U; i < rounds; ++i)
-      {
-        std::cout << "initialize()       boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        this->initialize();
-
-        std::cout << "test_binary_add()  boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_add();
-
-        std::cout << "test_binary_sub()  boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_sub();
-
-        std::cout << "test_binary_mul()  boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_mul();
-
-        std::cout << "test_binary_div()  boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_div();
-
-        std::cout << "test_binary_mod()  boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_mod();
-
-        std::cout << "test_binary_sqrt() boost compare with uintwide_t: round " << i << ",  digits2: " << this->get_digits2() << std::endl;
-        result_is_ok &= this->test_binary_sqrt();
-      }
-
-      return result_is_ok;
-    }
+    virtual auto do_test(std::size_t rounds) -> bool = 0;
 
   protected:
     using random_generator_type = std::mersenne_twister_engine<std::uint32_t,

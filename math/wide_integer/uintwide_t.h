@@ -8,6 +8,10 @@
 #ifndef UINTWIDE_T_2018_10_02_H // NOLINT(llvm-header-guard)
   #define UINTWIDE_T_2018_10_02_H
 
+  #if defined(WIDE_INTEGER_TEST_REPRESENTATION_AS_STD_LIST)
+  #define WIDE_INTEGER_DISABLE_WIDE_INTEGER_CONSTEXPR
+  #endif
+
   #include <algorithm>
   #include <array>
   #if defined(__cpp_lib_to_chars)
@@ -28,6 +32,9 @@
   #endif
   #include <iterator>
   #include <limits>
+  #if defined(WIDE_INTEGER_TEST_REPRESENTATION_AS_STD_LIST)
+  #include <list>
+  #endif
   #if !defined(WIDE_INTEGER_DISABLE_IMPLEMENT_UTIL_DYNAMIC_ARRAY)
   #include <memory>
   #endif
@@ -160,18 +167,16 @@
     using const_pointer          = const value_type*;
     using size_type              =       SizeType;
     using difference_type        =       DiffType;
-    using reverse_iterator       =       std::reverse_iterator<iterator>;
-    using const_reverse_iterator =       std::reverse_iterator<const_iterator>;
+    using reverse_iterator       =       std::reverse_iterator<      value_type*>;
+    using const_reverse_iterator =       std::reverse_iterator<const value_type*>;
 
     // Constructors.
-    constexpr dynamic_array() : elem_count(static_cast<size_type>(UINT8_C(0))),
-                                elems     (nullptr) { }
+    constexpr dynamic_array() : elem_count(static_cast<size_type>(UINT8_C(0))) { }
 
     explicit WIDE_INTEGER_CONSTEXPR dynamic_array(      size_type count,
                                                         const_reference v = value_type(),
                                                   const allocator_type& a = allocator_type())
-      : elem_count(count),
-        elems     (nullptr)
+      : elem_count(count)
     {
       if(elem_count > static_cast<size_type>(UINT8_C(0)))
       {
@@ -191,8 +196,7 @@
     }
 
     WIDE_INTEGER_CONSTEXPR dynamic_array(const dynamic_array& other)
-      : elem_count(other.size()),
-        elems     (nullptr)
+      : elem_count(other.size())
     {
       allocator_type my_a;
 
@@ -208,8 +212,7 @@
     WIDE_INTEGER_CONSTEXPR dynamic_array(input_iterator first,
                                          input_iterator last,
                                          const allocator_type& a = allocator_type())
-      : elem_count(static_cast<size_type>(std::distance(first, last))),
-        elems     (nullptr)
+      : elem_count(static_cast<size_type>(std::distance(first, last)))
     {
       allocator_type my_a(a);
 
@@ -223,8 +226,7 @@
 
     WIDE_INTEGER_CONSTEXPR dynamic_array(std::initializer_list<value_type> lst,
                                          const allocator_type& a = allocator_type())
-      : elem_count(lst.size()),
-        elems     (nullptr)
+      : elem_count(lst.size())
     {
       allocator_type my_a(a);
 
@@ -349,8 +351,8 @@
     }
 
   private:
-    mutable size_type elem_count; // NOLINT(readability-identifier-naming)
-    pointer           elems;      // NOLINT(readability-identifier-naming,altera-id-dependent-backward-branch)
+    mutable size_type elem_count;        // NOLINT(readability-identifier-naming)
+    pointer           elems { nullptr }; // NOLINT(readability-identifier-naming,altera-id-dependent-backward-branch)
   };
 
   template<typename ValueType, typename AllocatorType>
@@ -375,13 +377,13 @@
   {
     using size_type = typename dynamic_array<ValueType, AllocatorType>::size_type;
 
-    const bool size_of_left_is_zero = (lhs.size() == static_cast<size_type>(UINT8_C(0)));
+    const auto size_of_left_is_zero = (lhs.size() == static_cast<size_type>(UINT8_C(0)));
 
     bool b_result { };
 
     if(size_of_left_is_zero)
     {
-      const bool size_of_right_is_zero = (rhs.size() == static_cast<size_type>(UINT8_C(0)));
+      const auto size_of_right_is_zero = (rhs.size() == static_cast<size_type>(UINT8_C(0)));
 
       b_result = (!size_of_right_is_zero);
     }
@@ -389,7 +391,7 @@
     {
       if(size_of_left_is_zero)
       {
-        const bool size_of_right_is_zero = (rhs.size() == static_cast<size_type>(UINT8_C(0)));
+        const auto size_of_right_is_zero = (rhs.size() == static_cast<size_type>(UINT8_C(0)));
 
         b_result = (!size_of_right_is_zero);
       }
@@ -512,7 +514,7 @@
   template<const size_t Width2> struct verify_power_of_two // NOLINT(altera-struct-pack-align)
   {
     // TBD: Which powers should be checked if size_t is not 32 bits?
-    static constexpr bool conditional_value =
+    static constexpr auto conditional_value =
          (Width2 == static_cast<size_t>(1ULL <<  0U)) || (Width2 == static_cast<size_t>(1ULL <<  1U)) || (Width2 == static_cast<size_t>(1ULL <<  2U)) || (Width2 == static_cast<size_t>(1ULL <<  3U))
       || (Width2 == static_cast<size_t>(1ULL <<  4U)) || (Width2 == static_cast<size_t>(1ULL <<  5U)) || (Width2 == static_cast<size_t>(1ULL <<  6U)) || (Width2 == static_cast<size_t>(1ULL <<  7U))
       || (Width2 == static_cast<size_t>(1ULL <<  8U)) || (Width2 == static_cast<size_t>(1ULL <<  9U)) || (Width2 == static_cast<size_t>(1ULL << 10U)) || (Width2 == static_cast<size_t>(1ULL << 11U))
@@ -1043,8 +1045,9 @@
                 v);
     }
 
-    constexpr fixed_dynamic_array(const fixed_dynamic_array& other_array)
-      : base_class_type(static_cast<const base_class_type&>(other_array)) { }
+    constexpr fixed_dynamic_array(const fixed_dynamic_array& other_array) = default;
+
+    constexpr fixed_dynamic_array(fixed_dynamic_array&& other_array) noexcept = default;
 
     WIDE_INTEGER_CONSTEXPR fixed_dynamic_array(std::initializer_list<typename base_class_type::value_type> lst)
       : base_class_type(MySize)
@@ -1054,22 +1057,9 @@
                 base_class_type::begin());
     }
 
-    constexpr fixed_dynamic_array(fixed_dynamic_array&& other_array) noexcept
-      : base_class_type(static_cast<base_class_type&&>(other_array)) { }
+    WIDE_INTEGER_CONSTEXPR auto operator=(const fixed_dynamic_array& other_array) -> fixed_dynamic_array& = default;
 
-    WIDE_INTEGER_CONSTEXPR auto operator=(const fixed_dynamic_array& other_array) -> fixed_dynamic_array& // NOLINT(cert-oop54-cpp)
-    {
-      base_class_type::operator=(static_cast<const base_class_type&>(other_array));
-
-      return *this;
-    }
-
-    WIDE_INTEGER_CONSTEXPR auto operator=(fixed_dynamic_array&& other_array) noexcept -> fixed_dynamic_array&
-    {
-      base_class_type::operator=(static_cast<base_class_type&&>(other_array));
-
-      return *this;
-    }
+    WIDE_INTEGER_CONSTEXPR auto operator=(fixed_dynamic_array&& other_array) noexcept -> fixed_dynamic_array& = default;
 
     WIDE_INTEGER_CONSTEXPR ~fixed_dynamic_array() override = default;
   };
@@ -1149,7 +1139,7 @@
   template<const size_t Width2> struct verify_power_of_two_times_granularity_one_sixty_fourth // NOLINT(altera-struct-pack-align)
   {
     // List of numbers used to identify the form 2^n times 1...63.
-    static constexpr bool conditional_value =
+    static constexpr auto conditional_value =
        (   verify_power_of_two<static_cast<size_t>(Width2 /  1U)>::conditional_value || verify_power_of_two<static_cast<size_t>(Width2 /  3U)>::conditional_value
         || verify_power_of_two<static_cast<size_t>(Width2 /  5U)>::conditional_value || verify_power_of_two<static_cast<size_t>(Width2 /  7U)>::conditional_value
         || verify_power_of_two<static_cast<size_t>(Width2 /  9U)>::conditional_value || verify_power_of_two<static_cast<size_t>(Width2 / 11U)>::conditional_value
@@ -1200,7 +1190,11 @@
 
     for(p_str_copy = p_str; (*p_str_copy != '\0'); ++p_str_copy) { ; } // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,altera-id-dependent-backward-branch)
 
-    return static_cast<unsigned_fast_type>(p_str_copy - p_str);
+    return
+      static_cast<unsigned_fast_type>
+      (
+        p_str_copy - p_str
+      );
   }
 
   template<typename InputIterator,
@@ -1307,7 +1301,15 @@
                    "Error: Please check the characteristics of the template parameters UnsignedShortType and UnsignedLargeType");
     #endif
 
-    return static_cast<local_ularge_type>(static_cast<local_ularge_type>(static_cast<local_ularge_type>(hi) << static_cast<unsigned>(std::numeric_limits<UnsignedShortType>::digits)) | lo);
+    return
+      static_cast<local_ularge_type>
+      (
+          static_cast<local_ularge_type>
+          (
+            static_cast<local_ularge_type>(hi) << static_cast<unsigned>(std::numeric_limits<UnsignedShortType>::digits)
+          )
+        | lo
+      );
   }
 
   template<typename UnsignedIntegralType>
@@ -1316,11 +1318,12 @@
   {
     using local_unsigned_integral_type = UnsignedIntegralType;
 
-    return static_cast<local_unsigned_integral_type>
-    (
-        static_cast<local_unsigned_integral_type>(~u)
-      + static_cast<local_unsigned_integral_type>(UINT8_C(1))
-    );
+    return
+      static_cast<local_unsigned_integral_type>
+      (
+          static_cast<local_unsigned_integral_type>(~u)
+        + static_cast<local_unsigned_integral_type>(UINT8_C(1))
+      );
   }
 
   template<typename SignedIntegralType>
@@ -1332,7 +1335,11 @@
     using local_unsigned_integral_type =
       typename detail::uint_type_helper<static_cast<size_t>(std::numeric_limits<local_signed_integral_type>::digits + 1)>::exact_unsigned_type;
 
-    return static_cast<local_signed_integral_type>(negate(static_cast<local_unsigned_integral_type>(n)));
+    return
+      static_cast<local_signed_integral_type>
+      (
+        negate(static_cast<local_unsigned_integral_type>(n))
+      );
   }
 
   #if !defined(WIDE_INTEGER_DISABLE_FLOAT_INTEROP)
@@ -1368,7 +1375,9 @@
 
       unsigned n2 = 0U;
 
-      for(auto i = static_cast<std::uint_fast16_t>(UINT8_C(0)); i < static_cast<std::uint_fast16_t>(std::numeric_limits<native_float_type>::digits); ++i)
+      for(auto   i = static_cast<std::uint_fast16_t>(UINT8_C(0));
+                 i < static_cast<std::uint_fast16_t>(std::numeric_limits<native_float_type>::digits);
+               ++i)
       {
         // Extract the mantissa of the floating-point type in base-2
         // (one bit at a time) and store it in an unsigned long long.
@@ -1492,7 +1501,15 @@
         my_width2 / static_cast<size_t>(std::numeric_limits<limb_type>::digits)
       );
 
-    static constexpr auto number_of_limbs_karatsuba_threshold = static_cast<size_t>(static_cast<unsigned>(128U + 1U));
+    static constexpr auto number_of_limbs_karatsuba_threshold =
+      static_cast<size_t>
+      (
+        static_cast<unsigned>
+        (
+            static_cast<unsigned>(UINT8_C(128))
+          + static_cast<unsigned>(UINT8_C(1))
+        )
+      );
 
     // Verify that the Width2 template parameter (mirrored with my_width2):
     //   * Is equal to 2^n times 1...63.
@@ -1504,6 +1521,7 @@
                   "Error: Width2 must be 2^n times 1...63 (with n >= 3), while being 16, 24, 32 or larger, and exactly divisible by limb count");
 
     // The type of the internal data representation.
+    #if !defined(WIDE_INTEGER_TEST_REPRESENTATION_AS_STD_LIST)
     using representation_type =
       std::conditional_t
         <std::is_same<AllocatorType, void>::value,
@@ -1514,6 +1532,9 @@
                                      typename std::allocator_traits<std::conditional_t<std::is_same<AllocatorType, void>::value,
                                                                                        std::allocator<void>,
                                                                                        AllocatorType>>::template rebind_alloc<limb_type>>>;
+    #else
+    using representation_type = std::list<limb_type>;
+    #endif
 
     // The iterator types of the internal data representation.
     using iterator               = typename representation_type::iterator;
@@ -1578,7 +1599,7 @@
       using local_unsigned_integral_type =
         typename detail::uint_type_helper<static_cast<size_t>(std::numeric_limits<local_signed_integral_type>::digits + 1)>::exact_unsigned_type;
 
-      const bool v_is_neg = (v < static_cast<local_signed_integral_type>(0));
+      const auto v_is_neg = (v < static_cast<local_signed_integral_type>(0));
 
       const local_unsigned_integral_type u =
         ((!v_is_neg) ? static_cast<local_unsigned_integral_type>(v)
@@ -1604,11 +1625,11 @@
       }
       else
       {
-        const bool f_is_neg = (f < static_cast<local_builtin_float_type>(0.0F));
+        const auto f_is_neg = (f < static_cast<local_builtin_float_type>(0.0F));
 
         const local_builtin_float_type a = ((!f_is_neg) ? f : -f);
 
-        const bool a_is_zero = (a < static_cast<local_builtin_float_type>(1.0F));
+        const auto a_is_zero = (a < static_cast<local_builtin_float_type>(1.0F));
 
         if(!a_is_zero)
         {
@@ -1661,7 +1682,7 @@
     {
       using other_wide_integer_type = uintwide_t<OtherWidth2, LimbType, AllocatorType, OtherIsSigned>;
 
-      const bool v_is_neg = (other_wide_integer_type::is_neg(v));
+      const auto v_is_neg = (other_wide_integer_type::is_neg(v));
 
       constexpr auto sz = static_cast<size_t>(number_of_limbs);
 
@@ -1692,11 +1713,9 @@
     {
       using other_wide_integer_type = uintwide_t<OtherWidth2, LimbType, AllocatorType, OtherIsSigned>;
 
-      const bool v_is_neg = (other_wide_integer_type::is_neg(v));
-
       constexpr auto sz = static_cast<size_t>(other_wide_integer_type::number_of_limbs);
 
-      if(!v_is_neg)
+      if(!other_wide_integer_type::is_neg(v))
       {
         std::copy(v.crepresentation().cbegin(),
                   detail::advance_and_point(v.crepresentation().cbegin(), sz),
@@ -1734,7 +1753,7 @@
     }
 
     // Move constructor.
-    constexpr uintwide_t(uintwide_t&& other) noexcept = default;
+    constexpr uintwide_t(uintwide_t&&) noexcept = default;
 
     // Move-like constructor from the other signed-ness type.
     // This constructor is non-explicit because it is a trivial conversion.
@@ -1747,7 +1766,7 @@
     WIDE_INTEGER_CONSTEXPR ~uintwide_t() = default;
 
     // Assignment operator.
-    WIDE_INTEGER_CONSTEXPR auto operator=(const uintwide_t& other) -> uintwide_t& = default;
+    WIDE_INTEGER_CONSTEXPR auto operator=(const uintwide_t&) -> uintwide_t& = default;
 
     // Assignment operator from the other signed-ness type.
     template<const bool OtherIsSigned,
@@ -1798,7 +1817,7 @@
              const bool OtherIsSigned>
     WIDE_INTEGER_CONSTEXPR operator uintwide_t<OtherWidth2, LimbType, AllocatorType, OtherIsSigned>() const // NOLINT(hicpp-explicit-conversions,google-explicit-constructor)
     {
-      const bool this_is_neg = (is_neg(*this));
+      const auto this_is_neg = is_neg(*this);
 
       using other_wide_integer_type = uintwide_t<OtherWidth2, LimbType, AllocatorType, OtherIsSigned>;
 
@@ -1952,8 +1971,8 @@
       {
         // Unary division function.
 
-        const bool numererator_was_neg = is_neg(*this);
-        const bool denominator_was_neg = is_neg(other);
+        const auto numererator_was_neg = is_neg(*this);
+        const auto denominator_was_neg = is_neg(other);
 
         if(numererator_was_neg || denominator_was_neg)
         {
@@ -1989,8 +2008,8 @@
       else
       {
         // Unary modulus function.
-        const bool numererator_was_neg = is_neg(*this);
-        const bool denominator_was_neg = is_neg(other);
+        const auto numererator_was_neg = is_neg(*this);
+        const auto denominator_was_neg = is_neg(other);
 
         if(numererator_was_neg || denominator_was_neg)
         {
@@ -2301,7 +2320,7 @@
                                                 unsigned_fast_type field_width   = static_cast<unsigned_fast_type>(UINT8_C(0)),
                                           const char               fill_char_str = '0') const -> bool
     {
-      bool wr_string_is_ok = true;
+      auto wr_string_is_ok = true;
 
       if(base_rep == static_cast<std::uint_fast8_t>(UINT8_C(8)))
       {
@@ -2388,7 +2407,7 @@
       {
         uintwide_t t(*this);
 
-        const bool str_has_neg_sign = is_neg(t);
+        const auto str_has_neg_sign = is_neg(t);
 
         if(str_has_neg_sign)
         {
@@ -2723,7 +2742,9 @@
         );
     }
 
+  #if !defined(WIDE_INTEGER_DISABLE_PRIVATE_CLASS_DATA_MEMBERS)
   private:
+  #endif
     representation_type
       values // NOLINT(readability-identifier-naming)
       {
@@ -2732,6 +2753,9 @@
         typename representation_type::allocator_type()
       };
 
+  #if defined(WIDE_INTEGER_DISABLE_PRIVATE_CLASS_DATA_MEMBERS)
+  private:
+  #endif
     friend auto ::test_uintwide_t_edge::test_various_isolated_edge_cases() -> bool;
 
     explicit constexpr uintwide_t(const representation_type& other_rep)
@@ -3962,8 +3986,8 @@
       {
         const auto result_of_compare_left_with_right = compare(other);
 
-        const bool left_is_less_than_right = (result_of_compare_left_with_right == INT8_C(-1));
-        const bool left_is_equal_to_right  = (result_of_compare_left_with_right == INT8_C( 0));
+        const auto left_is_less_than_right = (result_of_compare_left_with_right == INT8_C(-1));
+        const auto left_is_equal_to_right  = (result_of_compare_left_with_right == INT8_C( 0));
 
         if(left_is_less_than_right)
         {
@@ -4140,7 +4164,7 @@
 
           *(nv.begin() + static_cast<size_t>(n)) = eval_multiply_1d(nv.begin(), vv.cbegin(), q_hat, n);
 
-          const bool has_borrow =
+          const auto has_borrow =
             eval_subtract_n(detail::advance_and_point(uu.begin(),  static_cast<size_t>(static_cast<local_uint_index_type>(uj - n))),
                             detail::advance_and_point(uu.cbegin(), static_cast<size_t>(static_cast<local_uint_index_type>(uj - n))),
                             nv.cbegin(),
@@ -4419,7 +4443,7 @@
         }
       }
 
-      bool char_is_valid = true;
+      auto char_is_valid = true;
 
       while((pos < str_length) && char_is_valid) // NOLINT(altera-id-dependent-backward-branch)
       {
@@ -4714,7 +4738,7 @@
   {
     using local_wide_integer_type = uintwide_t<Width2, LimbType, AllocatorType, IsSigned>;
 
-    const bool u_is_neg = local_wide_integer_type::is_neg(u);
+    const auto u_is_neg = local_wide_integer_type::is_neg(u);
 
     local_wide_integer_type remainder;
 
@@ -4833,9 +4857,9 @@
 
     const std::ios::fmtflags my_flags = out.flags();
 
-    const bool show_pos     = ((my_flags & std::ios::showpos)   == std::ios::showpos);
-    const bool show_base    = ((my_flags & std::ios::showbase)  == std::ios::showbase);
-    const bool is_uppercase = ((my_flags & std::ios::uppercase) == std::ios::uppercase);
+    const auto show_pos     = ((my_flags & std::ios::showpos)   == std::ios::showpos);
+    const auto show_base    = ((my_flags & std::ios::showbase)  == std::ios::showbase);
+    const auto is_uppercase = ((my_flags & std::ios::uppercase) == std::ios::uppercase);
 
     auto base_rep = std::uint_fast8_t { };
 
@@ -5061,7 +5085,7 @@
 
     using local_unsigned_integral_type = UnsignedIntegralType;
 
-    auto mask = static_cast<local_unsigned_integral_type>(u);
+    auto mask = static_cast<local_unsigned_integral_type>(u); // NOLINT(altera-id-dependent-backward-branch)
 
     // This assumes that at least one bit is set.
     // Otherwise saturation of the index will occur.
@@ -5483,15 +5507,15 @@
     local_wide_integer_type result;
     auto p0 = static_cast<local_limb_type>(p);
 
-    if((p0 == static_cast<local_limb_type>(UINT8_C(0))) && (p == OtherIntegralTypeP(0)))
+    if((p0 == static_cast<local_limb_type>(UINT8_C(0))) && (p == static_cast<OtherIntegralTypeP>(0)))
     {
       result = local_wide_integer_type(static_cast<std::uint8_t>(1U));
     }
-    else if((p0 == static_cast<local_limb_type>(UINT8_C(1))) && (p == OtherIntegralTypeP(1)))
+    else if((p0 == static_cast<local_limb_type>(UINT8_C(1))) && (p == static_cast<OtherIntegralTypeP>(1)))
     {
       result = b;
     }
-    else if((p0 == static_cast<local_limb_type>(UINT8_C(2))) && (p == OtherIntegralTypeP(2)))
+    else if((p0 == static_cast<local_limb_type>(UINT8_C(2))) && (p == static_cast<OtherIntegralTypeP>(2)))
     {
       result  = b;
       result *= b;
@@ -5539,17 +5563,17 @@
           local_double_width_type y      (b);
     const local_double_width_type m_local(m);
 
-    auto p0 = static_cast<local_limb_type>(p);
+    auto p0 = static_cast<local_limb_type>(p); // NOLINT(altera-id-dependent-backward-branch)
 
-    if((p0 == static_cast<local_limb_type>(UINT8_C(0))) && (p == OtherIntegralTypeP(0)))
+    if((p0 == static_cast<local_limb_type>(UINT8_C(0))) && (p == static_cast<OtherIntegralTypeP>(0)))
     {
       result = local_normal_width_type((m != 1U) ? static_cast<std::uint8_t>(1U) : static_cast<std::uint8_t>(UINT8_C(0)));
     }
-    else if((p0 == static_cast<local_limb_type>(UINT8_C(1))) && (p == OtherIntegralTypeP(1)))
+    else if((p0 == static_cast<local_limb_type>(UINT8_C(1))) && (p == static_cast<OtherIntegralTypeP>(1)))
     {
       result = b % m;
     }
-    else if((p0 == static_cast<local_limb_type>(UINT8_C(2))) && (p == OtherIntegralTypeP(2)))
+    else if((p0 == static_cast<local_limb_type>(UINT8_C(2))) && (p == static_cast<OtherIntegralTypeP>(2)))
     {
       y *= y;
       y %= m_local;
@@ -5664,8 +5688,8 @@
     using local_ushort_type       = typename local_wide_integer_type::limb_type;
     using local_ularge_type       = typename local_wide_integer_type::double_limb_type;
 
-    const bool u_is_neg = local_wide_integer_type::is_neg(a);
-    const bool v_is_neg = local_wide_integer_type::is_neg(b);
+    const auto u_is_neg = local_wide_integer_type::is_neg(a);
+    const auto v_is_neg = local_wide_integer_type::is_neg(b);
 
     local_wide_integer_type u((!u_is_neg) ? a : -a);
     local_wide_integer_type v((!v_is_neg) ? b : -b);
@@ -5817,9 +5841,9 @@
     const local_integer_type ap = abs(a);
     const local_integer_type bp = abs(b);
 
-    const bool a_is_greater_than_b = (ap > bp);
+    const auto a_is_greater_than_b = (ap > bp);
 
-    const local_integer_type gcd_of_ab = gcd(a, b);
+    const auto gcd_of_ab = gcd(a, b);
 
     return (a_is_greater_than_b ? ap * (bp / gcd_of_ab)
                                 : bp * (ap / gcd_of_ab));
@@ -6267,7 +6291,7 @@
 
     const local_param_type params(local_wide_integer_type(2U), np - 2U);
 
-    bool is_probably_prime = true;
+    auto is_probably_prime = true;
 
     auto i = static_cast<unsigned_fast_type>(UINT8_C(0));
 
@@ -6771,8 +6795,8 @@
     const auto val_unsigned =
     (
       (!uintwide_t<Width2, LimbType, AllocatorType, IsSigned>::is_neg(val))
-        ? local_unsigned_wide_integer_type(val)
-        : local_unsigned_wide_integer_type(-val)
+        ? static_cast<local_unsigned_wide_integer_type>(val)
+        : static_cast<local_unsigned_wide_integer_type>(-val)
     );
 
     static_assert(std::numeric_limits<local_result_value_type>::digits == std::numeric_limits<local_input_value_type>::digits,
@@ -6887,8 +6911,8 @@
     const auto val_unsigned =
     (
       (!uintwide_t<Width2, LimbType, AllocatorType, IsSigned>::is_neg(val))
-        ? local_unsigned_wide_integer_type(val)
-        : local_unsigned_wide_integer_type(-val)
+        ? static_cast<local_unsigned_wide_integer_type>(val)
+        : static_cast<local_unsigned_wide_integer_type>(-val)
     );
 
     static_assert(std::numeric_limits<local_result_value_type>::digits != std::numeric_limits<local_input_value_type>::digits,
